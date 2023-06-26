@@ -53,8 +53,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # This only works for public repositories.
-      # - name: Ask pkg.go.dev to look at latest docs
-      #   if: github.ref_type == 'tag'
-      #   run: go list -m "github.com/divergentcodes/labrador@${{ github.ref_name }}"
-      #   env:
-      #     GOPROXY: proxy.golang.org
+      - name: Ask pkg.go.dev to look at latest docs
+        if: github.ref_type == 'tag'
+        run: go list -m "github.com/divergentcodes/labrador@${{ github.ref_name }}"
+        env:
+          GOPROXY: proxy.golang.org

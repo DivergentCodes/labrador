@@ -14,8 +14,8 @@ import (
 	ssmTypes "github.com/aws/aws-sdk-go-v2/service/ssm/types"
 	"github.com/spf13/viper"
 
-	"divergent.codes/labrador/internal/core"
-	"divergent.codes/labrador/internal/record"
+	"github.com/divergentcodes/labrador/internal/core"
+	"github.com/divergentcodes/labrador/internal/record"
 )
 
 func FetchParameterStore() (map[string]*record.Record, error) {

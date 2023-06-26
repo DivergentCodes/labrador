@@ -15,18 +15,16 @@ Usage:
 Available Commands:
 
 	completion  Generate the autocompletion script for the specified shell
+	fetch       Fetch values from services
 	help        Help about any command
-	serve       Serve the web API
 	version     Print the version
 
 Flags:
 
-	    --config string   config file (default is .app.conf.yaml)
-	    --debug           Enable debug mode
-	-h, --help            help for labrador
-	    --json            Use JSON output
-	-q, --quiet           Quiet CLI output
-	    --verbose         Verbose CLI output
+	    --debug     Enable debug mode
+	-h, --help      help for labrador
+	-q, --quiet     Quiet CLI output
+	    --verbose   Verbose CLI output
 */
 package cmd
 
@@ -36,14 +34,21 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"divergent.codes/labrador/internal/core"
+	"github.com/divergentcodes/labrador/internal/core"
 )
 
 var (
 	rootCmd = &cobra.Command{
 		Use:   "labrador",
 		Short: "Fetch and load variables and secrets from remote services",
-		Long:  "Fetch and load variables and secrets from remote services",
+		Long: `Labrador fetches variables and secrets from remote services.
+
+		Values are recursively pulled from one or more services, and output
+		to the terminal or a file.
+
+		Labrador is focused on reading and pulling values, not on managing
+		or writing values. It was created with CI/CD pipelines and network
+		services in mind.`,
 	}
 )
 

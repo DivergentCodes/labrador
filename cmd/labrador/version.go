@@ -3,7 +3,7 @@ package cmd
 import (
 	"github.com/spf13/cobra"
 
-	"divergent.codes/labrador/internal/core"
+	"github.com/divergentcodes/labrador/internal/core"
 )
 
 var versionCmd = &cobra.Command{

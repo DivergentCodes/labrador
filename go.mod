@@ -1,4 +1,4 @@
-module divergent.codes/labrador
+module github.com/divergentcodes/labrador
 
 go 1.20
 

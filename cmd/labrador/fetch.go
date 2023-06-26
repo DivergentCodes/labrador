@@ -6,9 +6,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"divergent.codes/labrador/internal/aws"
-	"divergent.codes/labrador/internal/core"
-	"divergent.codes/labrador/internal/record"
+	"github.com/divergentcodes/labrador/internal/aws"
+	"github.com/divergentcodes/labrador/internal/core"
+	"github.com/divergentcodes/labrador/internal/record"
 )
 
 var fetchCmd = &cobra.Command{

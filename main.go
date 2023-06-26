@@ -1,8 +1,8 @@
 package main
 
 import (
-	cmd "divergent.codes/labrador/cmd/labrador"
-	"divergent.codes/labrador/internal/core"
+	cmd "github.com/divergentcodes/labrador/cmd/labrador"
+	"github.com/divergentcodes/labrador/internal/core"
 )
 
 func init() {

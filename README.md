@@ -1,5 +1,7 @@
 # Labrador
 
+[![Go Reference](https://pkg.go.dev/badge/github.com/divergentcodes/labrador.svg)](https://pkg.go.dev/github.com/divergentcodes/labrador)
+
 Pull secrets from remote services into CI/CD pipelines.
 
 Labrador is a CLI tool to fetch variables and secrets from remote

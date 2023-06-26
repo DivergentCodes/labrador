@@ -15,19 +15,6 @@ permissions:
   # https://docs.github.com/en/billing/managing-billing-for-github-packages/about-billing-for-github-packages#about-billing-for-github-packages
   packages: write
 
-  # actions: write
-  # checks: write
-  # deployments: write
-  # id-token: write
-  # issues: write
-  # discussions: write
-
-  # pages: write
-  # pull-requests: write
-  # repository-projects: write
-  # security-events: write
-  # statuses: write
-
 jobs:
   goreleaser:
     runs-on: ubuntu-latest

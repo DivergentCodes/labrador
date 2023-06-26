@@ -81,12 +81,6 @@ along with checksums and a changelog.
 A Docker image for the `x86_64` architecture is built and pushed to the Docker
 container registry.
 
-Package documentation is pulled by `pkg.go.dev` at the end of the workflow,
-if the repository is public. It does not like multiple leading zeros.
-Initializing the package documentation requires manually "requesting" it
-on the page it will be located at:
-https://pkg.go.dev/github.com/divergentcodes/labrador
-
 
 ### Changelogs
 
@@ -107,3 +101,20 @@ The commits with the following prefixes are omitted from the changelog:
 Commits with the following words anywhere are omitted from the changelog:
 - `typo`
 - `refactor`
+
+
+## Package Documentation
+
+Package documentation for the project is stored by `pkg.go.dev` at
+https://pkg.go.dev/github.com/divergentcodes/labrador.
+
+New versions are automatically fetched at the end of the release workflow.
+Authenticating to `pkg.go.dev` is not necessary, since the site just pulls
+whatever tagged/versioned documentation is present on Github. The
+repository must be public for `pkg.go.dev` to pull documentation.
+
+The `pkg.go.dev` site uses SemVer tags, and does not like multiple
+leading zeros.
+
+More information about adding documentation for a package can be found
+at: https://pkg.go.dev/about#adding-a-package

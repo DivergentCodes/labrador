@@ -1,4 +1,4 @@
-// Fetch values from AWS SSM Parameter Store.
+// Package aws fetches values from AWS SSM Parameter Store.
 package aws
 
 import (

@@ -123,9 +123,9 @@ dockers:
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:{{ .Tag }}{{ end }}"
 
     # Stable only release image tags.
-    - "{{ if not .Prerelease and not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:latest{{ end }}"
-    - "{{ if not .Prerelease and not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}{{ end }}"
-    - "{{ if not .Prerelease and not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}{{ end }}"
+    - "{{ if (not .Prerelease) and (not .IsSnapshot) }}ghcr.io/divergentcodes/{{ .ProjectName }}:latest{{ end }}"
+    - "{{ if (not .Prerelease) and (not .IsSnapshot) }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}{{ end }}"
+    - "{{ if (not .Prerelease) and (not .IsSnapshot) }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}{{ end }}"
 
   build_flag_templates:
     - "--label=org.opencontainers.image.created={{.Date}}"

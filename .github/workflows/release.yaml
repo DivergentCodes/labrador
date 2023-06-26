@@ -6,18 +6,26 @@ on:
     tags:
       - 'v[0-9]+.[0-9]+.[0-9]+*'
 
-permissions: write-all
-# permissions:
+permissions:
 
-#   # Upload archives as GitHub Releases or Homebrew.
-#   contents: write
+  # Upload archives as GitHub Releases or Homebrew.
+  contents: write
 
-#   # Push Docker images to Github (free for public packages).
-#   # https://docs.github.com/en/billing/managing-billing-for-github-packages/about-billing-for-github-packages#about-billing-for-github-packages
-#   packages: write
+  # Push Docker images to Github (free for public packages).
+  # https://docs.github.com/en/billing/managing-billing-for-github-packages/about-billing-for-github-packages#about-billing-for-github-packages
+  packages: write
 
-#   # Milestone closing capability.
-#   # issues: write
+  actions: write
+  checks: write
+  deployments: write
+  id-token: write
+  issues: write
+  discussions: write
+  pages: write
+  pull-requests: write
+  repository-projects: write
+  security-events: write
+  statuses: write
 
 jobs:
   goreleaser:

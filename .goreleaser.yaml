@@ -1,0 +1,132 @@
+# GoReleaser configuration.
+# Documentation: https://goreleaser.com
+
+project_name: labrador
+
+
+before:
+  hooks:
+    # Ensure that the go.mod file matches the source code in the module.
+    - go mod tidy
+    # Execute generate directives in files: "//go:generate ..."
+    - go generate ./...
+
+builds:
+  - env:
+      # Do not include the host libc.
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - windows
+      - darwin
+    ldflags:
+      # -s  disable symbol table
+      - '-s'
+      # -w  disable DWARF generation
+      - '-w'
+      # -X  set module variables at build time
+      - '-X divergent.codes/labrador/internal/core.Version={{.Version}}'
+      - '-X divergent.codes/labrador/internal/core.Commit={{.Commit}}'
+      - '-X divergent.codes/labrador/internal/core.Date={{.Date}}'
+      - '-X divergent.codes/labrador/internal/core.BuiltBy=goreleaser'
+
+# Snapshots are one-off builds that can be ad hoc.
+# "git pull" fetches tags (used in versions) by default.
+snapshot:
+  name_template: "{{ incpatch .Version }}-DEV-SNAPSHOT-{{.ShortCommit}}"
+
+checksum:
+  name_template: 'checksums.txt'
+
+# Changelog generation follows Conventional Commits.
+# https://www.conventionalcommits.org/en
+changelog:
+  # Set this to true if you don't want any changelog at all.
+  # skip: '{{ .Env.SKIP_CHANGELOG }}'
+
+  # Changelog generation implementation to use.
+  # - `git`: uses `git log`;
+  # - `github`: uses the compare GitHub API, appending the author login to the changelog.
+  # - `gitlab`: uses the compare GitLab API, appending the author name and email to the changelog.
+  # - `github-native`: uses the GitHub release notes generation API, disables the groups feature.
+  use: github
+
+  # Sorts the changelog by the commit's messages.
+  # Could either be asc, desc or empty
+  # Default is empty
+  sort: asc
+
+  # Max commit hash length to use in the changelog.
+  #
+  # 0: use whatever the changelog implementation gives you
+  # -1: remove the commit hash from the changelog
+  # any other number: max length.
+  #
+  # Default: 0.
+  abbrev: 0
+
+  # Group commits messages by given regex and title.
+  # Order value defines the order of the groups.
+  # Providing no regex means all commits will be grouped under the default group.
+  # Groups are disabled when using github-native, as it already groups things by itself.
+  # Matches are performed against strings of the form: "<abbrev-commit>[:] <title-commit>".
+  # Regex use RE2 syntax as defined here: https://github.com/google/re2/wiki/Syntax.
+  #
+  # Default is no groups.
+  groups:
+    - title: Features
+      regexp: '^.*?feat(\([[:word:]]+\))??!?:.+$'
+      order: 0
+    - title: 'Bug fixes'
+      regexp: '^.*?bug(\([[:word:]]+\))??!?:.+$'
+      order: 1
+    - title: Others
+      order: 999
+
+  # Exclude commit messages matching the listed regexp from the changelog.
+  filters:
+    exclude:
+      - '^ignore:'
+      - '^docs:'
+      - '^test:'
+      - typo
+      - refactor
+
+archives:
+  - format: tar.gz
+    # This name template makes the OS and Arch compatible with the results of uname.
+    name_template: >-
+      {{ .ProjectName }}_
+      {{- title .Os }}_
+      {{- if eq .Arch "amd64" }}x86_64
+      {{- else if eq .Arch "386" }}i386
+      {{- else }}{{ .Arch }}{{ end }}
+      {{- if .Arm }}v{{ .Arm }}{{ end }}
+    # Use zip for Windows archives.
+    format_overrides:
+      - goos: windows
+        format: zip
+
+dockers:
+- image_templates:
+    # Snapshot image tags.
+    - "{{ if .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:dev-snapshot{{ end }}"
+    - "{{ if .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:{{ incpatch .Version }}-dev-snapshot-{{.ShortCommit}}{{ end }}"
+
+    # Release image tags.
+    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:latest{{ end }}"
+    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}{{ end }}"
+    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Version }}{{ end }}"
+    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:{{ .Tag }}{{ end }}"
+
+  build_flag_templates:
+    - "--label=org.opencontainers.image.created={{.Date}}"
+    - "--label=org.opencontainers.image.revision={{.FullCommit}}"
+    - "--label=org.opencontainers.image.version={{.Version}}"
+    - "--label=org.opencontainers.image.title={{.ProjectName}}"
+    - "--label=org.opencontainers.image.description=Pull secrets from remote services into CI/CD pipelines."
+
+# The lines beneath this are called `modelines`. See `:help modeline`
+# Feel free to remove those if you don't want/use them.
+# yaml-language-server: $schema=https://goreleaser.com/static/schema.json
+# vim: set ts=2 sw=2 tw=0 fo=cnqoj

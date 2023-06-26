@@ -1,0 +1,39 @@
+name: pull-request
+
+on:
+  pull_request:
+    types:
+      - 'opened'
+    branches:
+      - 'main'
+  push:
+    branches:
+      - '*'
+
+jobs:
+
+  integration_checks:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup golang
+        uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - name: Code linting
+        run: make lint
+
+      - name: Static analysis
+        run: make sast
+
+      - name: Module checks
+        run: make modcheck
+
+      - name: Tests and coverage
+        run: make test
+        env:
+          COVERAGE_MIN: ${{ vars.COVERAGE_MIN }}

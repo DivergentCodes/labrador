@@ -1,0 +1,60 @@
+name: release
+
+on:
+  push:
+    # Run only against semver version tags.
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+*'
+
+permissions:
+
+  # Upload archives as GitHub Releases or Homebrew.
+  contents: write
+
+  # Push Docker images to Github (free for public packages).
+  # https://docs.github.com/en/billing/managing-billing-for-github-packages/about-billing-for-github-packages#about-billing-for-github-packages
+  packages: write
+
+  # Milestone closing capability.
+  # issues: write
+
+jobs:
+  goreleaser:
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout repository
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+      - run: git fetch --force --tags
+
+      # https://docs.github.com/en/actions/publishing-packages/publishing-docker-images#publishing-images-to-github-packages
+      # https://github.com/docker/login-action#github-container-registry
+      - name: Login to Github container registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Setup golang
+        uses: actions/setup-go@v4
+        with:
+          go-version: stable
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v4
+        with:
+          distribution: goreleaser
+          version: latest
+          args: release --clean
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      # This only works for public repositories.
+      # - name: Ask pkg.go.dev to look at latest docs
+      #   if: github.ref_type == 'tag'
+      #   run: go list -m "github.com/divergentcodes/labrador@${{ github.ref_name }}"
+      #   env:
+      #     GOPROXY: proxy.golang.org

@@ -44,7 +44,6 @@ make install
 labrador version
 ```
 
-
 ## Environment Variables
 
 All CLI arguments can also be configured as environment variables,

@@ -59,5 +59,3 @@ configure some of these variables automatically, like the `aws-actions/configure
 - `AWS_REGION`
 - `AWS_PROFILE`
 - `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`
-
-

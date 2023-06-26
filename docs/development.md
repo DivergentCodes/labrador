@@ -59,6 +59,12 @@ Releases are triggered by creating and pushing a Git tag in SemVer format.
 git tag "v0.0.1-alpha01"; git push --tags
 ```
 
+Tag rules:
+- The tag should follow SemVer format, with optional trailing segment.
+- The major/minor/patch versions should not have more than one leading `0`.
+    The `pkg.go.dev` site won't accept docs that way.
+
+
 Then the Github Actions workflow `.github/workflows/release.yaml` will:
 - Login to the Docker container registry.
 - Build everything.
@@ -76,7 +82,7 @@ A Docker image for the `x86_64` architecture is built and pushed to the Docker
 container registry.
 
 Package documentation is pulled by `pkg.go.dev` at the end of the workflow,
-if the repository is public.
+if the repository is public. It does not like multiple leading zeros.
 Initializing the package documentation requires manually "requesting" it
 on the page it will be located at:
 https://pkg.go.dev/github.com/divergentcodes/labrador

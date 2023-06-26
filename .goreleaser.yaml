@@ -121,6 +121,7 @@ dockers:
     # Release image tags.
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:latest{{ end }}"
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}{{ end }}"
+    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}{{ end }}"
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Version }}{{ end }}"
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:{{ .Tag }}{{ end }}"
 

@@ -114,16 +114,18 @@ archives:
 
 dockers:
 - image_templates:
-    # Snapshot image tags.
+    # Snapshot only image tags.
     - "{{ if .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:dev-snapshot{{ end }}"
     - "{{ if .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:{{ incpatch .Version }}-dev-snapshot-{{.ShortCommit}}{{ end }}"
 
-    # Release image tags.
-    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:latest{{ end }}"
-    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}{{ end }}"
-    - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}{{ end }}"
+    # Pre-release and stable image tags.
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Version }}{{ end }}"
     - "{{ if not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:{{ .Tag }}{{ end }}"
+
+    # Stable only release image tags.
+    - "{{ if not .Prerelease and not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:latest{{ end }}"
+    - "{{ if not .Prerelease and not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}{{ end }}"
+    - "{{ if not .Prerelease and not .IsSnapshot }}ghcr.io/divergentcodes/{{ .ProjectName }}:v{{ .Major }}.{{ .Minor }}{{ end }}"
 
   build_flag_templates:
     - "--label=org.opencontainers.image.created={{.Date}}"

@@ -75,8 +75,12 @@ along with checksums and a changelog.
 A Docker image for the `x86_64` architecture is built and pushed to the Docker
 container registry.
 
-Project and module documentation is pulled by `pkg.go.dev` at the end of
-the workflow, if the repository is public.
+Package documentation is pulled by `pkg.go.dev` at the end of the workflow,
+if the repository is public.
+Initializing the package documentation requires manually "requesting" it
+on the page it will be located at:
+https://pkg.go.dev/github.com/divergentcodes/labrador
+
 
 ### Changelogs
 

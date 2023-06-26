@@ -3,10 +3,10 @@
 # https://pkg.go.dev/cmd/doc
 
 for go_pkg in \
-    "divergent.codes/labrador/cmd/labrador" \
-    "divergent.codes/labrador/internal/aws" \
-    "divergent.codes/labrador/internal/core" \
-    "divergent.codes/labrador/internal/record" \
+    "github.com/divergentcodes/labrador/cmd/labrador" \
+    "github.com/divergentcodes/labrador/internal/aws" \
+    "github.com/divergentcodes/labrador/internal/core" \
+    "github.com/divergentcodes/labrador/internal/record" \
     ;
 do
     printf "\n\n###############################################################################"

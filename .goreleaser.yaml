@@ -30,10 +30,10 @@ builds:
       # -w  disable DWARF generation
       - '-w'
       # -X  set module variables at build time
-      - '-X divergent.codes/labrador/internal/core.Version={{.Version}}'
-      - '-X divergent.codes/labrador/internal/core.Commit={{.Commit}}'
-      - '-X divergent.codes/labrador/internal/core.Date={{.Date}}'
-      - '-X divergent.codes/labrador/internal/core.BuiltBy=goreleaser'
+      - '-X github.com/divergentcodes/labrador/internal/core.Version={{.Version}}'
+      - '-X github.com/divergentcodes/labrador/internal/core.Commit={{.Commit}}'
+      - '-X github.com/divergentcodes/labrador/internal/core.Date={{.Date}}'
+      - '-X github.com/divergentcodes/labrador/internal/core.BuiltBy=goreleaser'
 
 # Snapshots are one-off builds that can be ad hoc.
 # "git pull" fetches tags (used in versions) by default.

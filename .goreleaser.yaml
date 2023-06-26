@@ -17,8 +17,8 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
-      - darwin
+      # - windows
+      # - darwin
     ldflags:
       # -s  disable symbol table
       - '-s'

@@ -19,6 +19,11 @@ builds:
       - linux
       # - windows
       # - darwin
+    goarch:
+      - amd64
+      # - arm64
+      # - i386
+      # - arm
     ldflags:
       # -s  disable symbol table
       - '-s'

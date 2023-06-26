@@ -21,11 +21,12 @@ permissions:
   id-token: write
   issues: write
   discussions: write
-  pages: write
-  pull-requests: write
-  repository-projects: write
-  security-events: write
-  statuses: write
+
+  # pages: write
+  # pull-requests: write
+  # repository-projects: write
+  # security-events: write
+  # statuses: write
 
 jobs:
   goreleaser:

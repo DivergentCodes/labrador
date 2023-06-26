@@ -44,6 +44,12 @@ Most of what the Github Actions release workflow
 (`.github/workflows/release.yaml`) does happens on the Github platform, and
 the workflow is configured with all necessary Github permissions.
 
+The Github Docker container registry is hosted through Github Packages, which
+is organization wide in scope.
+
+Note: A permission error will fail the release workflow if there are active
+tag protection rules and no prior releases. Cut a single initial release,
+and then create the tag protection rule `v*`.
 
 ### Triggering Releases
 

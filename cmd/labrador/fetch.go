@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -27,6 +28,14 @@ func init() {
 	defaultOutFile := viper.GetViper().GetString(core.OptStr_OutFile)
 	fetchCmd.PersistentFlags().StringP("out-file", "o", defaultOutFile, "File path to write variable/value pairs to")
 	err := viper.BindPFlag(core.OptStr_OutFile, fetchCmd.PersistentFlags().Lookup(core.OptStr_OutFile))
+	if err != nil {
+		panic(err)
+	}
+
+	// chmod
+	defaultFileMode := viper.GetViper().GetString(core.OptStr_FileMode)
+	fetchCmd.PersistentFlags().String("out-file-mode", defaultFileMode, "File permissions for newly created outfile")
+	err = viper.BindPFlag(core.OptStr_FileMode, fetchCmd.PersistentFlags().Lookup(core.OptStr_FileMode))
 	if err != nil {
 		panic(err)
 	}
@@ -58,9 +67,10 @@ func fetch(cmd *cobra.Command, args []string) {
 	formattedOutput := formatRecordsOutput(records)
 
 	outFilePath := viper.GetString(core.OptStr_OutFile)
+	outFileMode := viper.GetString(core.OptStr_FileMode)
 	if outFilePath != "" {
 		// Dump formatted results to file.
-		writeFormattedOutFile(formattedOutput, outFilePath)
+		writeFormattedOutFile(formattedOutput, outFilePath, outFileMode)
 		core.PrintNormal(fmt.Sprintf("Wrote parameters to file: %s\n", outFilePath))
 	} else {
 		// Display formatted results to STDOUT.
@@ -114,9 +124,14 @@ func formatRecordsOutput(records map[string]*record.Record) string {
 }
 
 // Write fetched, formatted values to file.
-func writeFormattedOutFile(formattedOutput string, outFilePath string) {
+func writeFormattedOutFile(formattedOutput string, outFilePath string, outFileMode string) {
 	outFilePath = filepath.Clean(outFilePath)
-	fh, err := os.OpenFile(outFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
+
+	modeValue, _ := strconv.ParseUint(outFileMode, 8, 32)
+	fileMode := os.FileMode(modeValue)
+
+	// If the file doesn't exist, create it, or append to the file.
+	fh, err := os.OpenFile(outFilePath, os.O_APPEND|os.O_CREATE|os.O_WRONLY, fileMode) //#nosec
 	if err != nil {
 		core.PrintFatal(err.Error(), 1)
 	}

@@ -1,0 +1,20 @@
+#!/bin/sh
+
+# .git/hooks/pre-push
+#
+# Git hook that runs before each push to remote.
+
+remote="$1"
+url="$2"
+
+make lint
+ret=$?
+if [ $ret -ne 0 ]; then
+  exit $ret;
+fi
+
+make sast
+ret=$?
+if [ $ret -ne 0 ]; then
+  exit $ret;
+fi

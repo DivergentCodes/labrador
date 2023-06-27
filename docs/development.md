@@ -8,6 +8,16 @@
 - A configured Golang development environment.
 - A configured Docker installation (optional).
 
+### Local Setup
+
+Copy the Git hook for `pre-push`, so that new code is linted and scanned
+before pushing to the remote.
+
+```sh
+cp scripts/pre-push .git/hooks/pre-push
+chmod 700 .git/hooks/pre-push
+```
+
 ### Building Only the Binary
 
 ```sh

@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -114,6 +115,7 @@ func formatRecordsOutput(records map[string]*record.Record) string {
 
 // Write fetched, formatted values to file.
 func writeFormattedOutFile(formattedOutput string, outFilePath string) {
+	outFilePath = filepath.Clean(outFilePath)
 	fh, err := os.OpenFile(outFilePath, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
 	if err != nil {
 		core.PrintFatal(err.Error(), 1)

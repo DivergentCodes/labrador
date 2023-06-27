@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"os"
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -24,9 +23,9 @@ func FetchParameterStore() (map[string]*record.Record, error) {
 	ssmParameterResources := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	ssmParameterRecords := make(map[string]*record.Record, 0)
 
-	core.PrintVerbose("\nFetching SSM parameters:")
+	core.PrintVerbose("\nFetching SSM parameters...")
 	for _, resource := range ssmParameterResources {
-		core.PrintVerbose(fmt.Sprintf("\n\t%s", resource))
+		core.PrintDebug(fmt.Sprintf("\n\t%s", resource))
 	}
 
 	// Fetch and aggregate the parameter resources.
@@ -42,8 +41,6 @@ func FetchParameterStore() (map[string]*record.Record, error) {
 
 // Initialize a SSM client.
 func initSsmClient() *ssm.Client {
-	//verbose := viper.GetBool(core.OptStr_Verbose)
-
 	// Using the SDK's default configuration, loading additional config
 	// and credentials values from the environment variables, shared
 	// credentials, and shared configuration files
@@ -121,36 +118,4 @@ func parameterToRecord(parameter *ssmTypes.Parameter) *record.Record {
 	result.Data["version"] = fmt.Sprintf("%d", parameter.Version)
 
 	return &result
-}
-
-// This isn't used right now. Scraps to use for later.
-func SsmToFile() {
-
-	OUTFILE := "test_out.txt"
-
-	m := make(map[string]string)
-
-	// Write parameters to file.
-	fh, err := os.OpenFile(OUTFILE, os.O_APPEND|os.O_WRONLY|os.O_CREATE, 0600)
-	if err != nil {
-		panic(err)
-	}
-
-	defer fh.Close()
-
-	// Isolate variable name from full parameter store path.
-	// Then write it to file.
-	// TODO: separate the variable name extraction from file writing.
-	for full_key, value := range m {
-
-		split_key := strings.Split(full_key, "/")
-		var_name := split_key[len(split_key)-1]
-
-		line := fmt.Sprintf("%s=%s\n", var_name, value)
-		if _, err = fh.WriteString(line); err != nil {
-			panic(err)
-		}
-
-	}
-	core.PrintNormal(fmt.Sprintf("\nWrote parameters to file: %s\n", OUTFILE))
 }

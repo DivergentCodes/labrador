@@ -38,6 +38,7 @@ func initRootDefaults() {
 // Fetch configuration options
 var (
 	OptStr_NoConflict = "no-conflict"
+	OptStr_OutFile    = "out-file"
 
 	OptStr_AWS_SsmParameterStore = "aws-ps"
 	OptStr_AWS_SecretManager     = "aws-sm"
@@ -45,6 +46,7 @@ var (
 
 func initFetchDefaults() {
 	viper.SetDefault(OptStr_NoConflict, false)
+	viper.SetDefault(OptStr_OutFile, "")
 
 	viper.SetDefault(OptStr_AWS_SsmParameterStore, nil)
 	viper.SetDefault(OptStr_AWS_SecretManager, nil)

@@ -35,7 +35,7 @@ make install
 
 labrador version
 ```
-
+nothing
 ## Releasing
 
 ### Release Workflow Configuration
@@ -118,3 +118,17 @@ leading zeros.
 
 More information about adding documentation for a package can be found
 at: https://pkg.go.dev/about#adding-a-package
+
+
+## CLI Development
+
+### Adding a Subcommand CLI Parameter
+
+Files to modify:
+- `core/config.go`:
+  - Add a constant variable for the option's key in the Viper settings.
+  - Add a default option value to the Viper settings in the init code.
+- `cmd/labrador/<subcommand>.go`
+  - Add init code that gets the default value, defines the CLI parameter,
+      and fetches the user defined value for the option.
+

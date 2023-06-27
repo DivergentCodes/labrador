@@ -8,6 +8,16 @@
 - A configured Golang development environment.
 - A configured Docker installation (optional).
 
+### Local Setup
+
+Copy the Git hook for `pre-push`, so that new code is linted and scanned
+before pushing to the remote.
+
+```sh
+cp scripts/pre-push .git/hooks/pre-push
+chmod 700 .git/hooks/pre-push
+```
+
 ### Building Only the Binary
 
 ```sh
@@ -35,7 +45,7 @@ make install
 
 labrador version
 ```
-
+nothing
 ## Releasing
 
 ### Release Workflow Configuration
@@ -118,3 +128,17 @@ leading zeros.
 
 More information about adding documentation for a package can be found
 at: https://pkg.go.dev/about#adding-a-package
+
+
+## CLI Development
+
+### Adding a Subcommand CLI Parameter
+
+Files to modify:
+- `core/config.go`:
+  - Add a constant variable for the option's key in the Viper settings.
+  - Add a default option value to the Viper settings in the init code.
+- `cmd/labrador/<subcommand>.go`
+  - Add init code that gets the default value, defines the CLI parameter,
+      and fetches the user defined value for the option.
+

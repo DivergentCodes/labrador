@@ -5,7 +5,8 @@
 Pull secrets from remote services into CI/CD pipelines.
 
 Labrador is a CLI tool to fetch variables and secrets from remote
-services. The primary use case is enabling secretless pipelines,
+services. The primary use case is enabling secretless pipelines in
+conjunction with automated OIDC authentication to cloud providers,
 where secrets are dynamically fetched instead of statically stored.
 
 Values are recursively pulled from one or more services, and output

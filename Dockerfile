@@ -1,4 +1,5 @@
-# Builder image to add TLS certificates.
+# Builder image to add TLS certificates. The scratch image doesn't ship
+# with any, so outbound TLS connections will break without these.
 FROM alpine:latest AS builder
 RUN apk add -U make ca-certificates
 

@@ -1,0 +1,33 @@
+# .labrador.example.yaml - Example Labrador configuration file.
+
+###########################################################
+# Output options
+###########################################################
+
+# Highly detailed debug output. Includes verbose.
+debug: true
+
+# More detailed output.
+verbose: true
+
+# Only show the final result, without the banner or info.
+quiet: false
+
+# Option to write gathered variables/values to a file.
+outfile:
+  # File path.
+  path: foobar.txt
+  # File permisson mode.
+  mode: '760'
+
+
+###########################################################
+# AWS options
+###########################################################
+
+aws:
+  # List of AWS SSM Parameter Store paths to recursively fetch.
+  # Each item can be a single param, or a wildcard path to pull all params.
+  ssm_param:
+  - /path/to/single/param
+  - /path/to/wildcard/params/*

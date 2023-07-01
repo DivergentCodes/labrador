@@ -24,26 +24,26 @@ var fetchCmd = &cobra.Command{
 // Initialize the fetch CLI subcommand
 func init() {
 
-	// out-file
+	// outfile
 	defaultOutFile := viper.GetViper().GetString(core.OptStr_OutFile)
-	fetchCmd.PersistentFlags().StringP("out-file", "o", defaultOutFile, "File path to write variable/value pairs to")
-	err := viper.BindPFlag(core.OptStr_OutFile, fetchCmd.PersistentFlags().Lookup(core.OptStr_OutFile))
+	fetchCmd.PersistentFlags().StringP("outfile", "o", defaultOutFile, "File path to write variable/value pairs to")
+	err := viper.BindPFlag(core.OptStr_OutFile, fetchCmd.PersistentFlags().Lookup("outfile"))
 	if err != nil {
 		panic(err)
 	}
 
-	// chmod
+	// outfile-mode
 	defaultFileMode := viper.GetViper().GetString(core.OptStr_FileMode)
-	fetchCmd.PersistentFlags().String("out-file-mode", defaultFileMode, "File permissions for newly created outfile")
-	err = viper.BindPFlag(core.OptStr_FileMode, fetchCmd.PersistentFlags().Lookup(core.OptStr_FileMode))
+	fetchCmd.PersistentFlags().String("outfile-mode", defaultFileMode, "File permissions for newly created outfile")
+	err = viper.BindPFlag(core.OptStr_FileMode, fetchCmd.PersistentFlags().Lookup("outfile-mode"))
 	if err != nil {
 		panic(err)
 	}
 
-	// aws-ps
+	// aws-ssmps
 	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	fetchCmd.PersistentFlags().StringSlice("aws-ps", defaultAwsSsmParameters, "AWS SSM parameter store path prefix or ARN")
-	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, fetchCmd.PersistentFlags().Lookup(core.OptStr_AWS_SsmParameterStore))
+	fetchCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix or ARN")
+	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, fetchCmd.PersistentFlags().Lookup("aws-param"))
 	if err != nil {
 		panic(err)
 	}

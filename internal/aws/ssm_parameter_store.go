@@ -30,9 +30,18 @@ func FetchParameterStore() (map[string]*record.Record, error) {
 
 	// Fetch and aggregate the parameter resources.
 	for _, resource := range ssmParameterResources {
-		ssmParameterResultBatch := fetchParameterStoreResource(ssmClient, resource)
-		for name, record := range ssmParameterResultBatch {
-			ssmParameterRecords[name] = record
+		if strings.HasSuffix(resource, "/*") {
+			// Wildcard parameter paths.
+			ssmParameterResultBatch := fetchParameterStoreWildcard(ssmClient, resource)
+			for name, record := range ssmParameterResultBatch {
+				ssmParameterRecords[name] = record
+			}
+		} else {
+			// Single parameter paths.
+			ssmParameterResultBatch := fetchParameterStoreSingle(ssmClient, resource)
+			for name, record := range ssmParameterResultBatch {
+				ssmParameterRecords[name] = record
+			}
 		}
 	}
 
@@ -60,11 +69,39 @@ func initSsmClient() *ssm.Client {
 	return ssmClient
 }
 
-// Given a SSM parameter path or ARN, fetch and return the parameter.
-func fetchParameterStoreResource(ssmClient *ssm.Client, resource string) map[string]*record.Record {
+// Recursively fetch all parameters at a SSM parameter store wildcard path.
+func fetchParameterStoreSingle(ssmClient *ssm.Client, resource string) map[string]*record.Record {
+
+	// Using a map to be consistent with the wilcard fetching.
+	ssmParameterResults := make(map[string]*record.Record, 0)
+
+	input := &ssm.GetParameterInput{
+		Name:           aws.String(resource),
+		WithDecryption: aws.Bool(true),
+	}
+
+	resp, err := ssmClient.GetParameter(context.TODO(), input)
+
+	if err != nil {
+		log.Fatalf("failed to fetch SSM parameters, %v", err)
+	}
+
+	// Aggregate the parameters, since the call can be recursive.
+	// Last record has highest precendence.
+	result := parameterToRecord(resp.Parameter)
+	ssmParameterResults[result.Key] = result
+
+	return ssmParameterResults
+}
+
+// Recursively fetch all parameters at a SSM parameter store wildcard path.
+func fetchParameterStoreWildcard(ssmClient *ssm.Client, resource string) map[string]*record.Record {
+
 	recursive := true
 	nextToken := ""
 	ssmParameterResults := make(map[string]*record.Record, 0)
+
+	resource = strings.TrimRight(resource, "/*")
 
 	// Only 10 parameters can be fetched per call. Loop to fetch all.
 	for {

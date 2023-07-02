@@ -41,14 +41,14 @@ var (
 	rootCmd = &cobra.Command{
 		Use:   "labrador",
 		Short: "Fetch and load variables and secrets from remote services",
-		Long: `Labrador fetches variables and secrets from remote services.
+		Long: bannerText() + `
+Labrador fetches variables and secrets from remote services.
 
-		Values are recursively pulled from one or more services, and output
-		to the terminal or a file.
+Values are recursively pulled from one or more services, and output to the
+terminal or a file.
 
-		Labrador is focused on reading and pulling values, not on managing
-		or writing values. It was created with CI/CD pipelines and network
-		services in mind.`,
+Labrador is focused on reading and pulling values, not on managing or writing
+values. It was created with CI/CD pipelines and network services in mind.`,
 	}
 )
 
@@ -58,17 +58,6 @@ func init() {
 }
 
 func initRootFlags() {
-
-	// config
-	// TODO: implement reading from configuration file.
-	/*
-		var cfgFile string
-		rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is .labrador.conf.yaml)")
-		if cfgFile != "" {
-			// Use config file from the flag.
-			viper.SetConfigFile(cfgFile)
-		}
-	*/
 
 	// debug
 	defaultDebug := viper.GetBool(core.OptStr_Debug)
@@ -114,7 +103,7 @@ func Execute() error {
 // ShowBanner shows the CLI banner message.
 func ShowBanner() {
 
-	core.PrintNormal(fmt.Sprintf("Labrador %s created by %s <%s>\n", core.Version, core.AuthorName, core.AuthorEmail))
+	core.PrintNormal(bannerText())
 
 	core.PrintDebug("Labrador DEBUG mode is enabled\n")
 
@@ -123,4 +112,8 @@ func ShowBanner() {
 		core.Version, core.Commit, core.Date, core.BuiltBy,
 	)
 	core.PrintDebug(msg)
+}
+
+func bannerText() string {
+	return fmt.Sprintf("Labrador %s created by %s <%s>\n", core.Version, core.AuthorName, core.AuthorEmail)
 }

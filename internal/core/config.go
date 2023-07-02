@@ -8,7 +8,7 @@ import (
 )
 
 var envPrefix = "LAB"
-var configFileName = ".labrador.conf"
+var configFileName = ".labrador.yaml"
 var configFileType = "yaml"
 
 // InitConfigDefaults intializes the default configuration settings for the program.
@@ -38,11 +38,11 @@ func initRootDefaults() {
 // Fetch configuration options
 var (
 	OptStr_NoConflict = "no-conflict"
-	OptStr_OutFile    = "out-file"
-	OptStr_FileMode   = "out-file-mode"
+	OptStr_OutFile    = "outfile.path"
+	OptStr_FileMode   = "outfile.mode"
 
-	OptStr_AWS_SsmParameterStore = "aws-ps"
-	OptStr_AWS_SecretManager     = "aws-sm"
+	OptStr_AWS_SsmParameterStore = "aws.ssm_param"
+	OptStr_AWS_SecretManager     = "aws.sm"
 )
 
 func initFetchDefaults() {
@@ -76,7 +76,7 @@ func initConfigFile() {
 func initConfigEnv() {
 	// Support equivalent environment variables.
 	viper.SetEnvPrefix(envPrefix)
-	replacer := strings.NewReplacer(".", "_")
+	replacer := strings.NewReplacer(".", "_", "-", "_")
 	viper.SetEnvKeyReplacer(replacer)
 	viper.AutomaticEnv()
 }

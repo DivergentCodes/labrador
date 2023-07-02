@@ -40,7 +40,7 @@ func init() {
 		panic(err)
 	}
 
-	// aws-ssmps
+	// aws-param
 	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	fetchCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix or ARN")
 	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, fetchCmd.PersistentFlags().Lookup("aws-param"))

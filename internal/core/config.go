@@ -42,7 +42,7 @@ var (
 	OptStr_FileMode   = "outfile.mode"
 
 	OptStr_AWS_SsmParameterStore = "aws.ssm_param"
-	OptStr_AWS_SecretManager     = "aws.sm"
+	OptStr_AWS_SecretManager     = "aws.sm_secret" //#nosec
 )
 
 func initFetchDefaults() {

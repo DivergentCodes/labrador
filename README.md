@@ -2,17 +2,21 @@
 
 [![Go Reference](https://pkg.go.dev/badge/github.com/divergentcodes/labrador.svg)](https://pkg.go.dev/github.com/divergentcodes/labrador)
 
-Pull secrets from remote services into CI/CD pipelines.
+Fetch variables and secrets from remote services.
 
-Labrador is a CLI tool to fetch variables and secrets from remote
-services. Values are recursively pulled from one or more services,
-and output to the terminal or a file.
+Labrador is a CLI tool to fetch variables and secrets from one or more
+remote services. Values are recursively pulled from services, and
+output to the terminal or a file.
 
 The primary use case is enabling secretless pipelines in
 conjunction with automated OIDC authentication to cloud providers,
 where secrets are dynamically fetched instead of statically stored.
 
-Additional CI/CD pipeline support:
+Supported remote stores:
+- AWS Secrets Manager
+- AWS SSM Parameter Store
+
+CI/CD pipeline packages:
 - [labrador-action](https://github.com/marketplace/actions/labrador-action):
     A Github action for pulling variables and secrets into workflows.
 
@@ -24,33 +28,28 @@ curl -sL https://github.com/DivergentCodes/labrador/releases/latest/download/lab
 ./labrador fetch --aws-param "/path/to/params/*" --outfile "local.env"
 ```
 
-You can also copy the example configuration file, `.labrador.example.yaml`
-over to `.labrador.yaml` and customize it.
+You can also copy the `.labrador.example.yaml` example configuration file
+over to `.labrador.yaml`, customize it, and run `labrador fetch` without
+any other arguments needed.
 
 
 ## Installation
 
-### Binary from Github Releases
-
-Download and run the binary CLI from Github releases.
+Install and run the compiled binary.
 
 ```sh
 curl -sL https://github.com/DivergentCodes/labrador/releases/latest/download/labrador_Linux_x86_64.tar.gz  | tar -zx
 labrador version
 ```
 
-### Docker from Github Container Registry
-
-Pull and run the Docker image from the Github container registry.
+Install and run the Docker container.
 
 ```sh
 docker pull ghcr.io/divergentcodes/labrador
 docker run -it --rm ghcr.io/divergentcodes/labrador version
 ```
 
-### Binary from Source
-
-Download and run the binary CLI from Github releases.
+Install and run from source.
 
 ```sh
 git clone https://github.com/DivergentCodes/labrador
@@ -65,9 +64,10 @@ All CLI arguments can also be configured as environment variables,
 prefixed with `LAB_`.
 
 Examples:
-- `LAB_VERBOSE=1`
+- `LAB_AWS_SM_SECRET=name/of/secret`
 - `LAB_AWS_SSM_PARAM=/base/path/to/params/*`
 - `LAB_OUT_FILE=file.env`
+- `LAB_VERBOSE=1`
 
 
 ### AWS Environment Variables

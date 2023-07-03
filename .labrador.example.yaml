@@ -16,9 +16,9 @@ quiet: false
 # Option to write gathered variables/values to a file.
 outfile:
   # File path.
-  path: foobar.txt
+  path: local.env
   # File permisson mode.
-  mode: '760'
+  mode: '660'
 
 
 ###########################################################
@@ -26,6 +26,13 @@ outfile:
 ###########################################################
 
 aws:
+
+  # List of AWS Secrets Manager secret names to fetch.
+  # Each secret can hold multiple key/value pairs. All are pulled.
+  sm_secret:
+  - name/of/one
+  - name/of/two
+
   # List of AWS SSM Parameter Store paths to recursively fetch.
   # Each item can be a single param, or a wildcard path to pull all params.
   ssm_param:

@@ -40,6 +40,14 @@ func init() {
 		panic(err)
 	}
 
+	// aws-region
+	defaultAwsRegion := ""
+	fetchCmd.PersistentFlags().String("aws-region", defaultAwsRegion, "AWS region")
+	err = viper.BindPFlag(core.OptStr_AWS_Region, fetchCmd.PersistentFlags().Lookup("aws-region"))
+	if err != nil {
+		panic(err)
+	}
+
 	// aws-param
 	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	fetchCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix")

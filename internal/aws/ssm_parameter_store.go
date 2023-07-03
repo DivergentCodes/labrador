@@ -51,6 +51,8 @@ func FetchParameterStore() (map[string]*record.Record, error) {
 
 // Initialize a SSM client.
 func initSsmClient() *ssm.Client {
+	awsRegion := viper.GetString(core.OptStr_AWS_Region)
+
 	// Using the SDK's default configuration, loading additional config
 	// and credentials values from the environment variables, shared
 	// credentials, and shared configuration files
@@ -59,6 +61,10 @@ func initSsmClient() *ssm.Client {
 	)
 	if err != nil {
 		log.Fatalf("unable to load AWS SDK config, %v", err)
+	}
+	if awsRegion != "" {
+		awsConfig.Region = awsRegion
+		core.PrintDebug(fmt.Sprintf("\nSet AWS region: %s", awsRegion))
 	}
 
 	core.PrintVerbose("\nInitializing AWS SSM client...")

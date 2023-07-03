@@ -42,8 +42,16 @@ func init() {
 
 	// aws-param
 	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	fetchCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix or ARN")
+	fetchCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix")
 	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, fetchCmd.PersistentFlags().Lookup("aws-param"))
+	if err != nil {
+		panic(err)
+	}
+
+	// aws-secret
+	defaultAwsSmSecrets := viper.GetViper().GetStringSlice(core.OptStr_AWS_SecretManager)
+	fetchCmd.PersistentFlags().StringSlice("aws-secret", defaultAwsSmSecrets, "AWS Secrets Manager secret name")
+	err = viper.BindPFlag(core.OptStr_AWS_SecretManager, fetchCmd.PersistentFlags().Lookup("aws-secret"))
 	if err != nil {
 		panic(err)
 	}
@@ -62,6 +70,7 @@ func fetch(cmd *cobra.Command, args []string) {
 	records := make(map[string]*record.Record, 0)
 
 	records = fetchAwsSsmParameters(records)
+	records = fetchAwsSmSecrets(records)
 	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(records)))
 
 	formattedOutput := formatRecordsOutput(records)
@@ -86,10 +95,13 @@ func countRemoteTargets() int {
 	awsSsmParameters := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	remoteTargetCount += len(awsSsmParameters)
 
+	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
+	remoteTargetCount += len(awsSmSecrets)
+
 	return remoteTargetCount
 }
 
-// Fetch values, convert to records, add to list, and return the list.
+// Fetch AWS SSM Parameter Store values, convert to records, add to list, and return the list.
 func fetchAwsSsmParameters(records map[string]*record.Record) map[string]*record.Record {
 
 	awsSsmParameters := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
@@ -99,13 +111,37 @@ func fetchAwsSsmParameters(records map[string]*record.Record) map[string]*record
 			core.PrintFatal("failed to get SSM parameters", 1)
 		}
 
-		core.PrintVerbose(fmt.Sprintf("\nFetched %d SSM parameters", len(ssmRecords)))
+		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS SSM Parameter Store", len(ssmRecords)))
 		for name, record := range ssmRecords {
 			records[name] = record
-			core.PrintVerbose(fmt.Sprintf("\n\t%s", record.Data["arn"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", record.Data["type"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", record.Data["version"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tmodified: \t%s", record.Data["last-modified"]))
+			core.PrintVerbose(fmt.Sprintf("\n\t%s", record.Metadata["arn"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", record.Metadata["type"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", record.Metadata["version"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tmodified: \t%s", record.Metadata["last-modified"]))
+		}
+	}
+
+	return records
+}
+
+// Fetch AWS Secrets Manager values, convert to records, add to list, and return the list.
+func fetchAwsSmSecrets(records map[string]*record.Record) map[string]*record.Record {
+
+	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
+	if len(awsSmSecrets) != 0 {
+		smRecords, err := aws.FetchSecretsManager()
+		if err != nil {
+			core.PrintFatal("failed to get Secrets Manager values", 1)
+		}
+
+		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS Secrets Manager", len(smRecords)))
+		for name, record := range smRecords {
+			records[name] = record
+			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", record.Metadata["arn"], record.Key))
+			core.PrintDebug(fmt.Sprintf("\n\t\tsecret-name: \t%s", record.Metadata["secret-name"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", record.Metadata["type"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tversion-id: \t%s", record.Metadata["version-id"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tcreated: \t%s", record.Metadata["created-date"]))
 		}
 	}
 

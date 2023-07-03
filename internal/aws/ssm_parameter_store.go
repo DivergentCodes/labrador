@@ -17,13 +17,14 @@ import (
 	"github.com/divergentcodes/labrador/internal/record"
 )
 
+// Fetch values from AWS SSM Parameter Store.
 func FetchParameterStore() (map[string]*record.Record, error) {
 
 	ssmClient := initSsmClient()
 	ssmParameterResources := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	ssmParameterRecords := make(map[string]*record.Record, 0)
 
-	core.PrintVerbose("\nFetching SSM parameters...")
+	core.PrintVerbose("\nFetching SSM Parameter Store values...")
 	for _, resource := range ssmParameterResources {
 		core.PrintDebug(fmt.Sprintf("\n\t%s", resource))
 	}
@@ -60,10 +61,10 @@ func initSsmClient() *ssm.Client {
 		log.Fatalf("unable to load AWS SDK config, %v", err)
 	}
 
-	core.PrintVerbose("\nInitializing SSM client...")
+	core.PrintVerbose("\nInitializing AWS SSM client...")
 	ssmClient := ssm.NewFromConfig(awsConfig)
 	if err != nil {
-		log.Fatalf("failed to initialize SSM client, %v", err)
+		log.Fatalf("failed to initialize AWS SSM client, %v", err)
 	}
 
 	return ssmClient
@@ -81,13 +82,11 @@ func fetchParameterStoreSingle(ssmClient *ssm.Client, resource string) map[strin
 	}
 
 	resp, err := ssmClient.GetParameter(context.TODO(), input)
-
 	if err != nil {
-		log.Fatalf("failed to fetch SSM parameters, %v", err)
+		log.Fatalf("failed to fetch AWS SSM Parameter Store values, %v", err)
 	}
 
-	// Aggregate the parameters, since the call can be recursive.
-	// Last record has highest precendence.
+	// Convert the result to a canonical record.
 	result := parameterToRecord(resp.Parameter)
 	ssmParameterResults[result.Key] = result
 
@@ -140,19 +139,19 @@ func fetchParameterStoreWildcard(ssmClient *ssm.Client, resource string) map[str
 func parameterToRecord(parameter *ssmTypes.Parameter) *record.Record {
 
 	splitArn := strings.Split(*parameter.ARN, "/")
-	paramKey := splitArn[len(splitArn)-1]
+	varKey := splitArn[len(splitArn)-1]
 
 	result := record.Record{
-		Source: "aws-ssm-parameter-store",
-		Key:    paramKey,
-		Value:  *parameter.Value,
-		Data:   make(map[string]string),
+		Source:   "aws-ssm-parameter-store",
+		Key:      varKey,
+		Value:    *parameter.Value,
+		Metadata: make(map[string]string),
 	}
-	result.Data["arn"] = *parameter.ARN
-	result.Data["path"] = *parameter.Name
-	result.Data["type"] = string(parameter.Type)
-	result.Data["last-modified"] = parameter.LastModifiedDate.String()
-	result.Data["version"] = fmt.Sprintf("%d", parameter.Version)
+	result.Metadata["arn"] = *parameter.ARN
+	result.Metadata["path"] = *parameter.Name
+	result.Metadata["type"] = string(parameter.Type)
+	result.Metadata["last-modified"] = parameter.LastModifiedDate.String()
+	result.Metadata["version"] = fmt.Sprintf("%d", parameter.Version)
 
 	return &result
 }

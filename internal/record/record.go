@@ -12,5 +12,5 @@ type Record struct {
 	Source string
 
 	// Additional attributes about this record that might be useful.
-	Data map[string]string
+	Metadata map[string]string
 }

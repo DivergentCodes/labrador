@@ -41,6 +41,7 @@ var (
 	OptStr_OutFile    = "outfile.path"
 	OptStr_FileMode   = "outfile.mode"
 
+	OptStr_AWS_Region            = "aws.region"
 	OptStr_AWS_SsmParameterStore = "aws.ssm_param"
 	OptStr_AWS_SecretManager     = "aws.sm_secret" //#nosec
 )
@@ -50,6 +51,7 @@ func initFetchDefaults() {
 	viper.SetDefault(OptStr_OutFile, "")
 	viper.SetDefault(OptStr_FileMode, "0600")
 
+	viper.SetDefault(OptStr_AWS_Region, nil)
 	viper.SetDefault(OptStr_AWS_SsmParameterStore, nil)
 	viper.SetDefault(OptStr_AWS_SecretManager, nil)
 }

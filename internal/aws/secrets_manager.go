@@ -39,15 +39,20 @@ func FetchSecretsManager() (map[string]*record.Record, error) {
 }
 
 func initSecretsManagerClient() *secretsmanager.Client {
+	awsRegion := viper.GetString(core.OptStr_AWS_Region)
+
 	// Using the SDK's default configuration, loading additional config
 	// and credentials values from the environment variables, shared
 	// credentials, and shared configuration files
 	awsConfig, err := config.LoadDefaultConfig(
 		context.TODO(),
-		//config.WithRegion(region),
 	)
 	if err != nil {
 		log.Fatalf("unable to load AWS SDK config, %v", err)
+	}
+	if awsRegion != "" {
+		awsConfig.Region = awsRegion
+		core.PrintDebug(fmt.Sprintf("\nSet AWS region: %s", awsRegion))
 	}
 
 	core.PrintVerbose("\nInitializing AWS Secrets Manager client...")

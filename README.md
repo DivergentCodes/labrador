@@ -78,7 +78,8 @@ configure some of these variables automatically, like the
 [aws-actions/configure-aws-credentials](https://github.com/marketplace/actions/configure-aws-credentials-for-github-actions)
 Github Action.
 
-The AWS region always needs to be defined.
+The AWS region always needs to be defined. It can also be set as a CLI
+argument or in the configuration file.
 - `AWS_REGION`
 
 Authenticating to AWS can be done using a profile, an API key, or an assumed role.

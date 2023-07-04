@@ -20,10 +20,11 @@ Available Commands:
 
 Flags:
 
-	    --debug     Enable debug mode
-	-h, --help      help for labrador
-	-q, --quiet     Quiet CLI output
-	    --verbose   Verbose CLI output
+	-c, --config string   config file (default is .labrador.yaml)
+	    --debug           Enable debug mode
+	-h, --help            help for labrador
+	-q, --quiet           Quiet CLI output
+	    --verbose         Verbose CLI output
 
 Use "labrador [command] --help" for more information about a command.
 */
@@ -63,12 +64,15 @@ func initRootFlags() {
 
 	// config
 	rootCmd.PersistentFlags().StringP("config", "c", "", "config file (default is .labrador.yaml)")
-	viper.BindPFlag(core.OptStr_Config, rootCmd.PersistentFlags().Lookup("config"))
+	err := viper.BindPFlag(core.OptStr_Config, rootCmd.PersistentFlags().Lookup("config"))
+	if err != nil {
+		panic(err)
+	}
 
 	// debug
 	defaultDebug := viper.GetBool(core.OptStr_Debug)
 	rootCmd.PersistentFlags().Bool("debug", defaultDebug, "Enable debug mode")
-	err := viper.BindPFlag(core.OptStr_Debug, rootCmd.PersistentFlags().Lookup("debug"))
+	err = viper.BindPFlag(core.OptStr_Debug, rootCmd.PersistentFlags().Lookup("debug"))
 	if err != nil {
 		panic(err)
 	}

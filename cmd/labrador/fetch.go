@@ -79,7 +79,9 @@ func fetch(cmd *cobra.Command, args []string) {
 
 	records = fetchAwsSsmParameters(records)
 	records = fetchAwsSmSecrets(records)
+	core.PrintDebug("\n")
 	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(records)))
+	core.PrintDebug("\n")
 
 	formattedOutput := formatRecordsOutput(records)
 

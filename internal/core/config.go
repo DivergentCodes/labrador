@@ -1,27 +1,28 @@
 package core
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
 	"github.com/spf13/viper"
 )
 
-var envPrefix = "LAB"
-var configFileName = ".labrador.yaml"
-var configFileType = "yaml"
-
 // InitConfigDefaults intializes the default configuration settings for the program.
 func InitConfigDefaults() {
 	initRootDefaults()
 	initFetchDefaults()
 
+}
+
+func InitConfigInstance() {
 	initConfigFile()
 	initConfigEnv()
 }
 
 // Global configuration options (viper lookup strings).
 var (
+	OptStr_Config  = "config"
 	OptStr_Debug   = "debug"
 	OptStr_OutJSON = "out-json"
 	OptStr_Quiet   = "quiet"
@@ -29,6 +30,7 @@ var (
 )
 
 func initRootDefaults() {
+	viper.SetDefault(OptStr_Config, "")
 	viper.SetDefault(OptStr_Debug, false)
 	viper.SetDefault(OptStr_OutJSON, false)
 	viper.SetDefault(OptStr_Quiet, false)
@@ -56,28 +58,44 @@ func initFetchDefaults() {
 	viper.SetDefault(OptStr_AWS_SecretManager, nil)
 }
 
-// Configuration file and environment.
+// Configuration file instance setup.
 func initConfigFile() {
 
-	// Use default config file location.
-	viper.AddConfigPath(".")
-	viper.SetConfigName(configFileName)
-	viper.SetConfigType(configFileType)
+	defaultConfigFile := ".labrador.yaml"
+	useExplicitConfigFile := true
+
+	// Check if explicit configuration file was passed.
+	configFile := viper.GetString("config")
+	if configFile == "" {
+		configFile = defaultConfigFile
+		useExplicitConfigFile = false
+
+	}
+
+	// Config file lookup paths.
+	viper.AddConfigPath(".") // Look in current path.
+	viper.AddConfigPath("/") // Look in root path so absolute paths work.
+	viper.SetConfigName(configFile)
+	viper.SetConfigType("yaml")
 
 	if err := viper.ReadInConfig(); err != nil {
 		if _, ok := err.(viper.ConfigFileNotFoundError); ok {
-			// Config file not found. Ignore error and continue.
+			// Config file not found. Ignore error and continue,
+			// unless explicit config file was passed.
+			if useExplicitConfigFile {
+				PrintFatal(fmt.Sprintf("could not find config file %s", configFile), 1)
+			}
 		} else {
 			// Config file was found but another error was produced.
 			os.Exit(1)
 		}
 	}
-
 }
 
+// Environment variable instance setup.
 func initConfigEnv() {
 	// Support equivalent environment variables.
-	viper.SetEnvPrefix(envPrefix)
+	viper.SetEnvPrefix("LAB")
 	replacer := strings.NewReplacer(".", "_", "-", "_")
 	viper.SetEnvKeyReplacer(replacer)
 	viper.AutomaticEnv()

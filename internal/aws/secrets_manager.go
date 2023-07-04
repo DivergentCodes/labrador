@@ -38,6 +38,7 @@ func FetchSecretsManager() (map[string]*record.Record, error) {
 	return secretsManagerRecords, nil
 }
 
+// Initialize a AWS Secrets Manager client instance.
 func initSecretsManagerClient() *secretsmanager.Client {
 	awsRegion := viper.GetString(core.OptStr_AWS_Region)
 
@@ -55,6 +56,7 @@ func initSecretsManagerClient() *secretsmanager.Client {
 		core.PrintDebug(fmt.Sprintf("\nSet AWS region: %s", awsRegion))
 	}
 
+	core.PrintDebug("\n")
 	core.PrintVerbose("\nInitializing AWS Secrets Manager client...")
 	smClient := secretsmanager.NewFromConfig(awsConfig)
 	if err != nil {

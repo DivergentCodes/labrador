@@ -1,12 +1,11 @@
 /*
 Labrador fetches variables and secrets from remote services.
 
-Values are recursively pulled from one or more services, and output
-to the terminal or a file.
+Values are recursively pulled from one or more services, and output to the
+terminal or a file.
 
-Labrador is focused on reading and pulling values, not on managing
-or writing values. It was created with CI/CD pipelines and network
-services in mind.
+Labrador is focused on reading and pulling values, not on managing or writing
+values. It was created with CI/CD pipelines and network services in mind.
 
 Usage:
 
@@ -25,6 +24,8 @@ Flags:
 	-h, --help      help for labrador
 	-q, --quiet     Quiet CLI output
 	    --verbose   Verbose CLI output
+
+Use "labrador [command] --help" for more information about a command.
 */
 package cmd
 
@@ -54,10 +55,15 @@ values. It was created with CI/CD pipelines and network services in mind.`,
 
 // Run for root command. Will execute for all subcommands.
 func init() {
+	cobra.OnInitialize(core.InitConfigInstance)
 	initRootFlags()
 }
 
 func initRootFlags() {
+
+	// config
+	rootCmd.PersistentFlags().StringP("config", "c", "", "config file (default is .labrador.yaml)")
+	viper.BindPFlag(core.OptStr_Config, rootCmd.PersistentFlags().Lookup("config"))
 
 	// debug
 	defaultDebug := viper.GetBool(core.OptStr_Debug)
@@ -66,17 +72,6 @@ func initRootFlags() {
 	if err != nil {
 		panic(err)
 	}
-
-	// json
-	// TODO: implement exporting results to JSON.
-	/*
-		defaultOutJSON := viper.GetBool(core.OptStr_OutJSON)
-		rootCmd.PersistentFlags().Bool("json", defaultOutJSON, "Use JSON output")
-		err = viper.BindPFlag(core.OptStr_OutJSON, rootCmd.PersistentFlags().Lookup("json"))
-		if err != nil {
-			panic(err)
-		}
-	*/
 
 	// quiet
 	defaultQuiet := viper.GetBool(core.OptStr_Quiet)
@@ -93,6 +88,20 @@ func initRootFlags() {
 	if err != nil {
 		panic(err)
 	}
+
+	// json
+	// TODO: implement exporting results to JSON.
+	/*
+		defaultOutJSON := viper.GetBool(core.OptStr_OutJSON)
+		rootCmd.PersistentFlags().Bool("json", defaultOutJSON, "Use JSON output")
+		err = viper.BindPFlag(core.OptStr_OutJSON, rootCmd.PersistentFlags().Lookup("json"))
+		if err != nil {
+			panic(err)
+		}
+	*/
+
+	rootCmd.MarkFlagsMutuallyExclusive("quiet", "debug")
+	rootCmd.MarkFlagsMutuallyExclusive("quiet", "verbose")
 }
 
 // Execute starts the app CLI.

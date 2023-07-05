@@ -2,7 +2,6 @@ package core
 
 import (
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -87,7 +86,7 @@ func initConfigFile() {
 			}
 		} else {
 			// Config file was found but another error was produced.
-			os.Exit(1)
+			PrintFatal(fmt.Sprintf("failed to parse config file %s", configFile), 1)
 		}
 	}
 }

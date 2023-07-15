@@ -12,15 +12,15 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/divergentcodes/labrador/internal/core"
-	"github.com/divergentcodes/labrador/internal/record"
+	"github.com/divergentcodes/labrador/internal/variable"
 )
 
 // Fetch values from AWS Secrets Manager.
-func FetchSecretsManager() (map[string]*record.Record, error) {
+func FetchSecretsManager() (map[string]*variable.Variable, error) {
 
 	smClient := initSecretsManagerClient()
 	secretsManagerResources := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
-	secretsManagerRecords := make(map[string]*record.Record, 0)
+	secretsManagerVariables := make(map[string]*variable.Variable, 0)
 
 	core.PrintVerbose("\nFetching Secrets Manager values...")
 	for _, resource := range secretsManagerResources {
@@ -30,12 +30,12 @@ func FetchSecretsManager() (map[string]*record.Record, error) {
 	// Fetch and aggregate the parameter resources.
 	for _, resource := range secretsManagerResources {
 		smSecretsManagerResultBatch := fetchSecretsManagerSecret(smClient, resource)
-		for name, record := range smSecretsManagerResultBatch {
-			secretsManagerRecords[name] = record
+		for name, variable := range smSecretsManagerResultBatch {
+			secretsManagerVariables[name] = variable
 		}
 	}
 
-	return secretsManagerRecords, nil
+	return secretsManagerVariables, nil
 }
 
 // Initialize a AWS Secrets Manager client instance.
@@ -67,9 +67,9 @@ func initSecretsManagerClient() *secretsmanager.Client {
 }
 
 // Fetch a secret from AWS Secrets Manager.
-func fetchSecretsManagerSecret(smClient *secretsmanager.Client, resource string) map[string]*record.Record {
+func fetchSecretsManagerSecret(smClient *secretsmanager.Client, resource string) map[string]*variable.Variable {
 	// Using a map to be consistent with the wilcard fetching.
-	smSecretResults := make(map[string]*record.Record, 0)
+	smSecretResults := make(map[string]*variable.Variable, 0)
 
 	input := &secretsmanager.GetSecretValueInput{
 		SecretId:     aws.String(resource),
@@ -81,15 +81,15 @@ func fetchSecretsManagerSecret(smClient *secretsmanager.Client, resource string)
 		log.Fatalf("failed to fetch AWS Secrets Manager values, %v", err)
 	}
 
-	smSecretResults = secretToRecords(resp, smSecretResults)
+	smSecretResults = secretToVariables(resp, smSecretResults)
 
 	return smSecretResults
 }
 
-// Convert an AWS Secrets Manager secret to a list of Records.
+// Convert an AWS Secrets Manager secret to a list of Variables.
 //
 // One secret can hold multiple key/value pairs.
-func secretToRecords(secret *secretsmanager.GetSecretValueOutput, smSecretRecords map[string]*record.Record) map[string]*record.Record {
+func secretToVariables(secret *secretsmanager.GetSecretValueOutput, smSecretVariables map[string]*variable.Variable) map[string]*variable.Variable {
 
 	var varType string
 	if secret.SecretString != nil {
@@ -102,9 +102,9 @@ func secretToRecords(secret *secretsmanager.GetSecretValueOutput, smSecretRecord
 			core.PrintFatal(err.Error(), 1)
 		}
 
-		// Format each key/value pair as a record.
+		// Format each key/value pair as a variable.
 		for k, v := range secretDict {
-			result := record.Record{
+			result := variable.Variable{
 				Source:   "aws-secrets-manager",
 				Key:      k,
 				Value:    v,
@@ -117,12 +117,12 @@ func secretToRecords(secret *secretsmanager.GetSecretValueOutput, smSecretRecord
 			result.Metadata["version-id"] = *secret.VersionId
 			//result.Metadata["version-stages"] = *&secret.VersionStages[]
 
-			smSecretRecords[k] = &result
+			smSecretVariables[k] = &result
 		}
 	} else {
 		varType = "SecretBinary"
 
-		result := record.Record{
+		result := variable.Variable{
 			Source:   "aws-secrets-manager",
 			Key:      *secret.Name,
 			Value:    string(secret.SecretBinary[:]),
@@ -135,8 +135,8 @@ func secretToRecords(secret *secretsmanager.GetSecretValueOutput, smSecretRecord
 		result.Metadata["version-id"] = *secret.VersionId
 		//result.Metadata["version-stages"] = *&secret.VersionStages[]
 
-		smSecretRecords[*secret.Name] = &result
+		smSecretVariables[*secret.Name] = &result
 	}
 
-	return smSecretRecords
+	return smSecretVariables
 }

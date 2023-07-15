@@ -6,7 +6,7 @@ for go_pkg in \
     "github.com/divergentcodes/labrador/cmd/labrador" \
     "github.com/divergentcodes/labrador/internal/aws" \
     "github.com/divergentcodes/labrador/internal/core" \
-    "github.com/divergentcodes/labrador/internal/record" \
+    "github.com/divergentcodes/labrador/internal/variables" \
     ;
 do
     printf "\n\n###############################################################################"

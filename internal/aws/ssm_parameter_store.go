@@ -14,15 +14,15 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/divergentcodes/labrador/internal/core"
-	"github.com/divergentcodes/labrador/internal/record"
+	"github.com/divergentcodes/labrador/internal/variable"
 )
 
 // Fetch values from AWS SSM Parameter Store.
-func FetchParameterStore() (map[string]*record.Record, error) {
+func FetchParameterStore() (map[string]*variable.Variable, error) {
 
 	ssmClient := initSsmClient()
 	ssmParameterResources := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	ssmParameterRecords := make(map[string]*record.Record, 0)
+	ssmParameterVariables := make(map[string]*variable.Variable, 0)
 
 	core.PrintVerbose("\nFetching SSM Parameter Store values...")
 	for _, resource := range ssmParameterResources {
@@ -34,19 +34,19 @@ func FetchParameterStore() (map[string]*record.Record, error) {
 		if strings.HasSuffix(resource, "/*") {
 			// Wildcard parameter paths.
 			ssmParameterResultBatch := fetchParameterStoreWildcard(ssmClient, resource)
-			for name, record := range ssmParameterResultBatch {
-				ssmParameterRecords[name] = record
+			for name, variable := range ssmParameterResultBatch {
+				ssmParameterVariables[name] = variable
 			}
 		} else {
 			// Single parameter paths.
 			ssmParameterResultBatch := fetchParameterStoreSingle(ssmClient, resource)
-			for name, record := range ssmParameterResultBatch {
-				ssmParameterRecords[name] = record
+			for name, variable := range ssmParameterResultBatch {
+				ssmParameterVariables[name] = variable
 			}
 		}
 	}
 
-	return ssmParameterRecords, nil
+	return ssmParameterVariables, nil
 }
 
 // Initialize a SSM client.
@@ -77,10 +77,10 @@ func initSsmClient() *ssm.Client {
 }
 
 // Recursively fetch all parameters at a SSM parameter store wildcard path.
-func fetchParameterStoreSingle(ssmClient *ssm.Client, resource string) map[string]*record.Record {
+func fetchParameterStoreSingle(ssmClient *ssm.Client, resource string) map[string]*variable.Variable {
 
 	// Using a map to be consistent with the wilcard fetching.
-	ssmParameterResults := make(map[string]*record.Record, 0)
+	ssmParameterResults := make(map[string]*variable.Variable, 0)
 
 	input := &ssm.GetParameterInput{
 		Name:           aws.String(resource),
@@ -92,19 +92,19 @@ func fetchParameterStoreSingle(ssmClient *ssm.Client, resource string) map[strin
 		log.Fatalf("failed to fetch AWS SSM Parameter Store values, %v", err)
 	}
 
-	// Convert the result to a canonical record.
-	result := parameterToRecord(resp.Parameter)
+	// Convert the result to a canonical variable.
+	result := parameterToVariable(resp.Parameter)
 	ssmParameterResults[result.Key] = result
 
 	return ssmParameterResults
 }
 
 // Recursively fetch all parameters at a SSM parameter store wildcard path.
-func fetchParameterStoreWildcard(ssmClient *ssm.Client, resource string) map[string]*record.Record {
+func fetchParameterStoreWildcard(ssmClient *ssm.Client, resource string) map[string]*variable.Variable {
 
 	recursive := true
 	nextToken := ""
-	ssmParameterResults := make(map[string]*record.Record, 0)
+	ssmParameterResults := make(map[string]*variable.Variable, 0)
 
 	resource = strings.TrimRight(resource, "/*")
 
@@ -125,9 +125,9 @@ func fetchParameterStoreWildcard(ssmClient *ssm.Client, resource string) map[str
 		}
 
 		// Aggregate the parameters, since the call can be recursive.
-		// Last record has highest precendence.
+		// Last variable has highest precendence.
 		for i := range resp.Parameters {
-			result := parameterToRecord(&resp.Parameters[i])
+			result := parameterToVariable(&resp.Parameters[i])
 			ssmParameterResults[result.Key] = result
 		}
 
@@ -141,13 +141,13 @@ func fetchParameterStoreWildcard(ssmClient *ssm.Client, resource string) map[str
 	return ssmParameterResults
 }
 
-// Convert a parameter store resource to an intermediate labrador record representation.
-func parameterToRecord(parameter *ssmTypes.Parameter) *record.Record {
+// Convert a parameter store resource to an intermediate labrador variable representation.
+func parameterToVariable(parameter *ssmTypes.Parameter) *variable.Variable {
 
 	splitArn := strings.Split(*parameter.ARN, "/")
 	varKey := splitArn[len(splitArn)-1]
 
-	result := record.Record{
+	result := variable.Variable{
 		Source:   "aws-ssm-parameter-store",
 		Key:      varKey,
 		Value:    *parameter.Value,

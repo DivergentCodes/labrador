@@ -11,7 +11,7 @@ import (
 
 	"github.com/divergentcodes/labrador/internal/aws"
 	"github.com/divergentcodes/labrador/internal/core"
-	"github.com/divergentcodes/labrador/internal/record"
+	"github.com/divergentcodes/labrador/internal/variable"
 )
 
 var fetchCmd = &cobra.Command{
@@ -75,15 +75,15 @@ func fetch(cmd *cobra.Command, args []string) {
 		core.PrintFatal("no remote values to fetch were specified", 1)
 	}
 
-	records := make(map[string]*record.Record, 0)
+	variables := make(map[string]*variable.Variable, 0)
 
-	records = fetchAwsSsmParameters(records)
-	records = fetchAwsSmSecrets(records)
+	variables = fetchAwsSsmParameters(variables)
+	variables = fetchAwsSmSecrets(variables)
 	core.PrintDebug("\n")
-	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(records)))
+	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(variables)))
 	core.PrintDebug("\n")
 
-	formattedOutput := formatRecordsOutput(records)
+	formattedOutput := formatVariablesOutput(variables)
 
 	outFilePath := viper.GetString(core.OptStr_OutFile)
 	outFileMode := viper.GetString(core.OptStr_FileMode)
@@ -111,59 +111,59 @@ func countRemoteTargets() int {
 	return remoteTargetCount
 }
 
-// Fetch AWS SSM Parameter Store values, convert to records, add to list, and return the list.
-func fetchAwsSsmParameters(records map[string]*record.Record) map[string]*record.Record {
+// Fetch AWS SSM Parameter Store values, convert to variables, add to list, and return the list.
+func fetchAwsSsmParameters(variables map[string]*variable.Variable) map[string]*variable.Variable {
 
 	awsSsmParameters := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	if len(awsSsmParameters) != 0 {
-		ssmRecords, err := aws.FetchParameterStore()
+		ssmVariables, err := aws.FetchParameterStore()
 		if err != nil {
 			core.PrintFatal("failed to get SSM parameters", 1)
 		}
 
-		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS SSM Parameter Store", len(ssmRecords)))
-		for name, record := range ssmRecords {
-			records[name] = record
-			core.PrintVerbose(fmt.Sprintf("\n\t%s", record.Metadata["arn"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", record.Metadata["type"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", record.Metadata["version"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tmodified: \t%s", record.Metadata["last-modified"]))
+		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS SSM Parameter Store", len(ssmVariables)))
+		for name, variable := range ssmVariables {
+			variables[name] = variable
+			core.PrintVerbose(fmt.Sprintf("\n\t%s", variable.Metadata["arn"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", variable.Metadata["type"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", variable.Metadata["version"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tmodified: \t%s", variable.Metadata["last-modified"]))
 		}
 	}
 
-	return records
+	return variables
 }
 
-// Fetch AWS Secrets Manager values, convert to records, add to list, and return the list.
-func fetchAwsSmSecrets(records map[string]*record.Record) map[string]*record.Record {
+// Fetch AWS Secrets Manager values, convert to variables, add to list, and return the list.
+func fetchAwsSmSecrets(variables map[string]*variable.Variable) map[string]*variable.Variable {
 
 	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
 	if len(awsSmSecrets) != 0 {
-		smRecords, err := aws.FetchSecretsManager()
+		smVariables, err := aws.FetchSecretsManager()
 		if err != nil {
 			core.PrintFatal("failed to get Secrets Manager values", 1)
 		}
 
-		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS Secrets Manager", len(smRecords)))
-		for name, record := range smRecords {
-			records[name] = record
-			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", record.Metadata["arn"], record.Key))
-			core.PrintDebug(fmt.Sprintf("\n\t\tsecret-name: \t%s", record.Metadata["secret-name"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", record.Metadata["type"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tversion-id: \t%s", record.Metadata["version-id"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tcreated: \t%s", record.Metadata["created-date"]))
+		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS Secrets Manager", len(smVariables)))
+		for name, variable := range smVariables {
+			variables[name] = variable
+			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", variable.Metadata["arn"], variable.Key))
+			core.PrintDebug(fmt.Sprintf("\n\t\tsecret-name: \t%s", variable.Metadata["secret-name"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", variable.Metadata["type"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tversion-id: \t%s", variable.Metadata["version-id"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tcreated: \t%s", variable.Metadata["created-date"]))
 		}
 	}
 
-	return records
+	return variables
 }
 
-// Convert the list of records to formatted output.
-func formatRecordsOutput(records map[string]*record.Record) string {
+// Convert the list of variables to formatted output.
+func formatVariablesOutput(variables map[string]*variable.Variable) string {
 	// Only does env format for now.
-	formattedOutput, err := record.RecordsAsEnvFile(records)
+	formattedOutput, err := variable.VariablesAsEnvFile(variables)
 	if err != nil {
-		core.PrintFatal("failed to format records as env file", 1)
+		core.PrintFatal("failed to format variables as env file", 1)
 	}
 
 	return formattedOutput

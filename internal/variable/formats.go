@@ -1,20 +1,20 @@
-package record
+package variable
 
-// Ways to format the data in a set of records.
+// Ways to format the data in a set of variables.
 
 import (
 	"fmt"
 	"strings"
 )
 
-// Format a set of records as an env file.
+// Format a set of variables as an env file.
 //
 //	export $(labrador --quiet | xargs)
-func RecordsAsEnvFile(records map[string]*Record) (string, error) {
+func VariablesAsEnvFile(variables map[string]*Variable) (string, error) {
 
 	result := ""
 
-	for name, item := range records {
+	for name, item := range variables {
 		envVarName := envNamify(name)
 		result += fmt.Sprintf("%s=%s\n", envVarName, item.Value)
 	}

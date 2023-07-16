@@ -9,17 +9,24 @@ import (
 )
 
 // Format a set of variables as an env file.
-func VariablesAsEnvFile(variables map[string]*Variable, quote bool) (string, error) {
+func VariablesAsEnvFile(variables map[string]*Variable, quote bool, lower bool, upper bool) (string, error) {
 
 	result := ""
 
 	for name, item := range variables {
 		envVarName := envNamify(name)
+		if lower {
+			envVarName = strings.ToLower(envVarName)
+		} else if upper {
+			envVarName = strings.ToUpper(envVarName)
+		}
+
 		envVarValue := item.Value
 		if quote {
 			envVarValue = escapeDoubleQuotes(envVarValue)
 			envVarValue = fmt.Sprintf("\"%s\"", envVarValue)
 		}
+
 		result += fmt.Sprintf("%s=%s\n", envVarName, envVarValue)
 	}
 	result = strings.TrimSuffix(result, "\n")
@@ -29,10 +36,10 @@ func VariablesAsEnvFile(variables map[string]*Variable, quote bool) (string, err
 
 // Format a set of shell environment variable exports.
 //
-// source <(labrador fetch --export)
-func VariablesAsShellExport(variables map[string]*Variable) (string, error) {
+// source <(labrador export)
+func VariablesAsShellExport(variables map[string]*Variable, lower bool, upper bool) (string, error) {
 
-	result, err := VariablesAsEnvFile(variables, true)
+	result, err := VariablesAsEnvFile(variables, true, lower, upper)
 	if err != nil {
 		return "", err
 	}

@@ -79,7 +79,8 @@ any other arguments needed.
   development, pipelines, and deployed environments.
 - **Output options**: Use fetched values to create an `.env` file, set
   environment variables directly in the current shell, pass to another command,
-  or print to the console.
+  or print to the console. Key/value transforms include converting variable names
+  to upper or lower case, and wrapping values in double quotes.
 - **Wildcard paths**: For supported value stores, use a single wildcard resource
   path to recursively load all child values into the workflow
   ([example](#fetch-multiple-values-from-ssm-parameter-store-using-wildcard-paths)).

@@ -11,6 +11,7 @@ import (
 func InitConfigDefaults() {
 	initRootDefaults()
 	initValueStoreDefaults()
+	initOutputTransformOptions()
 	initFetchDefaults()
 }
 
@@ -43,12 +44,18 @@ var (
 	OptStr_AWS_SecretManager     = "aws.sm_secret" //#nosec
 )
 
+// Variable key/value transformation configuration options
+var (
+	OptStr_Quote   = "transform.quote"
+	OptStr_ToLower = "transform.lower"
+	OptStr_ToUpper = "transform.upper"
+)
+
 // Fetch configuration options
 var (
 	OptStr_NoConflict = "no-conflict"
 	OptStr_OutFile    = "outfile.path"
 	OptStr_FileMode   = "outfile.mode"
-	OptStr_Quote      = "quote"
 )
 
 func initValueStoreDefaults() {
@@ -57,11 +64,16 @@ func initValueStoreDefaults() {
 	viper.SetDefault(OptStr_AWS_SecretManager, nil)
 }
 
+func initOutputTransformOptions() {
+	viper.SetDefault(OptStr_Quote, false)
+	viper.SetDefault(OptStr_ToLower, false)
+	viper.SetDefault(OptStr_ToUpper, false)
+}
+
 func initFetchDefaults() {
 	viper.SetDefault(OptStr_NoConflict, false)
 	viper.SetDefault(OptStr_OutFile, "")
 	viper.SetDefault(OptStr_FileMode, "0600")
-	viper.SetDefault(OptStr_Quote, false)
 }
 
 // Configuration file instance setup.

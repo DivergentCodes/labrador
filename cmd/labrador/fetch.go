@@ -23,6 +23,17 @@ var fetchCmd = &cobra.Command{
 // Initialize the fetch CLI subcommand
 func init() {
 
+	// json
+	// TODO: implement exporting results to JSON.
+	/*
+		defaultOutJSON := viper.GetBool(core.OptStr_OutJSON)
+		rootCmd.PersistentFlags().Bool("json", defaultOutJSON, "Use JSON output")
+		err = viper.BindPFlag(core.OptStr_OutJSON, rootCmd.PersistentFlags().Lookup("json"))
+		if err != nil {
+			panic(err)
+		}
+	*/
+
 	// outfile
 	defaultOutFile := viper.GetViper().GetString(core.OptStr_OutFile)
 	fetchCmd.PersistentFlags().StringP("outfile", "o", defaultOutFile, "File path to write variable/value pairs to")
@@ -35,38 +46,6 @@ func init() {
 	defaultFileMode := viper.GetViper().GetString(core.OptStr_FileMode)
 	fetchCmd.PersistentFlags().String("outfile-mode", defaultFileMode, "File permissions for newly created outfile")
 	err = viper.BindPFlag(core.OptStr_FileMode, fetchCmd.PersistentFlags().Lookup("outfile-mode"))
-	if err != nil {
-		panic(err)
-	}
-
-	// quote
-	defaultQuote := viper.GetBool(core.OptStr_Quote)
-	fetchCmd.PersistentFlags().Bool("quote", defaultQuote, "Surround each value with doublequotes")
-	err = viper.BindPFlag(core.OptStr_Quote, fetchCmd.PersistentFlags().Lookup("quote"))
-	if err != nil {
-		panic(err)
-	}
-
-	// aws-region
-	defaultAwsRegion := ""
-	fetchCmd.PersistentFlags().String("aws-region", defaultAwsRegion, "AWS region")
-	err = viper.BindPFlag(core.OptStr_AWS_Region, fetchCmd.PersistentFlags().Lookup("aws-region"))
-	if err != nil {
-		panic(err)
-	}
-
-	// aws-param
-	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	fetchCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix")
-	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, fetchCmd.PersistentFlags().Lookup("aws-param"))
-	if err != nil {
-		panic(err)
-	}
-
-	// aws-secret
-	defaultAwsSmSecrets := viper.GetViper().GetStringSlice(core.OptStr_AWS_SecretManager)
-	fetchCmd.PersistentFlags().StringSlice("aws-secret", defaultAwsSmSecrets, "AWS Secrets Manager secret name")
-	err = viper.BindPFlag(core.OptStr_AWS_SecretManager, fetchCmd.PersistentFlags().Lookup("aws-secret"))
 	if err != nil {
 		panic(err)
 	}
@@ -111,7 +90,10 @@ func formatVariablesOutput(variables map[string]*variable.Variable) string {
 	var err error
 
 	useQuotes := viper.GetBool(core.OptStr_Quote)
-	formattedOutput, err = variable.VariablesAsEnvFile(variables, useQuotes)
+	toLower := viper.GetBool(core.OptStr_ToLower)
+	toUpper := viper.GetBool(core.OptStr_ToUpper)
+
+	formattedOutput, err = variable.VariablesAsEnvFile(variables, useQuotes, toLower, toUpper)
 	if err != nil {
 		core.PrintFatal("failed to format variables as env file", 1)
 	}

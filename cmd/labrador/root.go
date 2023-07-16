@@ -14,6 +14,7 @@ Usage:
 Available Commands:
 
 	completion  Generate the autocompletion script for the specified shell
+	export      Fetch and export values as shell environment variables
 	fetch       Fetch values from services
 	help        Help about any command
 	version     Print the version

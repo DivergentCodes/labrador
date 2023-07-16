@@ -1,7 +1,7 @@
 # .labrador.example.yaml - Example Labrador configuration file.
 
 ###########################################################
-# Output options
+# Display options
 ###########################################################
 
 # Highly detailed debug output. Includes verbose.
@@ -13,13 +13,24 @@ verbose: true
 # Only show the final result, without the banner or info.
 quiet: false
 
-# Surround values in double quotes and escape existing double quotes.
-quote: false
+
+###########################################################
+# Output options
+###########################################################
+
+# Variable key/value transformation options.
+transform:
+  # Surround values in double quotes and escape existing double quotes.
+  quote: false
+  # Make all variable names lower case.
+  lower: false
+  # Make all variable names upper case.
+  upper: false
 
 # Option to write gathered variables/values to a file.
 outfile:
   # File path.
-  path: local.env
+  path: .env
   # File permisson mode.
   mode: '660'
 

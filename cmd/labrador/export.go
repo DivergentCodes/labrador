@@ -15,33 +15,8 @@ var exportCmd = &cobra.Command{
 	Run:   export,
 }
 
-// Initialize the fetch CLI subcommand
+// Initialize the export CLI subcommand
 func init() {
-
-	// aws-region
-	defaultAwsRegion := ""
-	exportCmd.PersistentFlags().String("aws-region", defaultAwsRegion, "AWS region")
-	err := viper.BindPFlag(core.OptStr_AWS_Region, exportCmd.PersistentFlags().Lookup("aws-region"))
-	if err != nil {
-		panic(err)
-	}
-
-	// aws-param
-	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	exportCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix")
-	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, exportCmd.PersistentFlags().Lookup("aws-param"))
-	if err != nil {
-		panic(err)
-	}
-
-	// aws-secret
-	defaultAwsSmSecrets := viper.GetViper().GetStringSlice(core.OptStr_AWS_SecretManager)
-	exportCmd.PersistentFlags().StringSlice("aws-secret", defaultAwsSmSecrets, "AWS Secrets Manager secret name")
-	err = viper.BindPFlag(core.OptStr_AWS_SecretManager, exportCmd.PersistentFlags().Lookup("aws-secret"))
-	if err != nil {
-		panic(err)
-	}
-
 	rootCmd.AddCommand(exportCmd)
 }
 
@@ -58,7 +33,9 @@ func export(cmd *cobra.Command, args []string) {
 	variables = fetchAwsSsmParameters(variables)
 	variables = fetchAwsSmSecrets(variables)
 
-	formattedOutput, err := variable.VariablesAsShellExport(variables)
+	toLower := viper.GetBool(core.OptStr_ToLower)
+	toUpper := viper.GetBool(core.OptStr_ToUpper)
+	formattedOutput, err := variable.VariablesAsShellExport(variables, toLower, toUpper)
 	if err != nil {
 		core.PrintFatal("failed to format variables as shell exports", 1)
 	}

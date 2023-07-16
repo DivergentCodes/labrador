@@ -1,11 +1,13 @@
 /*
-Labrador fetches variables and secrets from remote services.
+Labrador (latest) created by Jack Sullivan <jack@divergent.codes>
 
-Values are recursively pulled from one or more services, and output to the
-terminal or a file.
+Labrador is a CLI tool to fetch secrets and other configuration values
+from one or more remote services.
 
-Labrador is focused on reading and pulling values, not on managing or writing
-values. It was created with CI/CD pipelines and network services in mind.
+Labrador was created to explore safer, consistent, cross-platform ways of
+handling secrets during each phase of the SDLC. The idea is to fetch secrets
+from a central service at runtime, in a standard way, instead of copying secrets
+to each environment and persisting them all over the place.
 
 Usage:
 
@@ -21,11 +23,17 @@ Available Commands:
 
 Flags:
 
-	-c, --config string   config file (default is .labrador.yaml)
-	    --debug           Enable debug mode
-	-h, --help            help for labrador
-	-q, --quiet           Quiet CLI output
-	    --verbose         Verbose CLI output
+	    --aws-param strings    AWS SSM parameter store path prefix
+	    --aws-region string    AWS region
+	    --aws-secret strings   AWS Secrets Manager secret name
+	-c, --config string        config file (default is .labrador.yaml)
+	    --debug                Enable debug mode
+	-h, --help                 help for labrador
+	    --lower                Set all variable names to lower case
+	-q, --quiet                Quiet CLI output
+	    --quote                Surround each value with doublequotes
+	    --upper                Set all variable names to upper case
+	    --verbose              Verbose CLI output
 
 Use "labrador [command] --help" for more information about a command.
 */
@@ -45,15 +53,16 @@ import (
 var (
 	rootCmd = &cobra.Command{
 		Use:   "labrador",
-		Short: "Fetch and load variables and secrets from remote services",
+		Short: "Fetch and secrets and values from remote services",
 		Long: bannerText() + `
-Labrador fetches variables and secrets from remote services.
+Labrador is a CLI tool to fetch secrets and other configuration values
+from one or more remote services.
 
-Values are recursively pulled from one or more services, and output to the
-terminal or a file.
-
-Labrador is focused on reading and pulling values, not on managing or writing
-values. It was created with CI/CD pipelines and network services in mind.`,
+Labrador was created to explore safer, consistent, cross-platform ways of
+handling secrets during each phase of the SDLC. The idea is to fetch secrets
+from a central service at runtime, in a standard way, instead of copying secrets
+to each environment and persisting them all over the place.
+`,
 	}
 )
 
@@ -71,6 +80,8 @@ func initRootFlags() {
 	if err != nil {
 		panic(err)
 	}
+
+	// Display.
 
 	// debug
 	defaultDebug := viper.GetBool(core.OptStr_Debug)
@@ -96,17 +107,59 @@ func initRootFlags() {
 		panic(err)
 	}
 
-	// json
-	// TODO: implement exporting results to JSON.
-	/*
-		defaultOutJSON := viper.GetBool(core.OptStr_OutJSON)
-		rootCmd.PersistentFlags().Bool("json", defaultOutJSON, "Use JSON output")
-		err = viper.BindPFlag(core.OptStr_OutJSON, rootCmd.PersistentFlags().Lookup("json"))
-		if err != nil {
-			panic(err)
-		}
-	*/
+	// Output transforms.
 
+	// quote
+	defaultQuote := viper.GetBool(core.OptStr_Quote)
+	rootCmd.PersistentFlags().Bool("quote", defaultQuote, "Surround each value with doublequotes")
+	err = viper.BindPFlag(core.OptStr_Quote, rootCmd.PersistentFlags().Lookup("quote"))
+	if err != nil {
+		panic(err)
+	}
+
+	// lower
+	defaultToLower := viper.GetBool(core.OptStr_ToLower)
+	rootCmd.PersistentFlags().Bool("lower", defaultToLower, "Set all variable names to lower case")
+	err = viper.BindPFlag(core.OptStr_ToLower, rootCmd.PersistentFlags().Lookup("lower"))
+	if err != nil {
+		panic(err)
+	}
+
+	// upper
+	defaultToUpper := viper.GetBool(core.OptStr_ToUpper)
+	rootCmd.PersistentFlags().Bool("upper", defaultToUpper, "Set all variable names to upper case")
+	err = viper.BindPFlag(core.OptStr_ToUpper, rootCmd.PersistentFlags().Lookup("upper"))
+	if err != nil {
+		panic(err)
+	}
+
+	// Remote services.
+
+	// aws-region
+	defaultAwsRegion := ""
+	rootCmd.PersistentFlags().String("aws-region", defaultAwsRegion, "AWS region")
+	err = viper.BindPFlag(core.OptStr_AWS_Region, rootCmd.PersistentFlags().Lookup("aws-region"))
+	if err != nil {
+		panic(err)
+	}
+
+	// aws-param
+	defaultAwsSsmParameters := viper.GetViper().GetStringSlice(core.OptStr_AWS_SsmParameterStore)
+	rootCmd.PersistentFlags().StringSlice("aws-param", defaultAwsSsmParameters, "AWS SSM parameter store path prefix")
+	err = viper.BindPFlag(core.OptStr_AWS_SsmParameterStore, rootCmd.PersistentFlags().Lookup("aws-param"))
+	if err != nil {
+		panic(err)
+	}
+
+	// aws-secret
+	defaultAwsSmSecrets := viper.GetViper().GetStringSlice(core.OptStr_AWS_SecretManager)
+	rootCmd.PersistentFlags().StringSlice("aws-secret", defaultAwsSmSecrets, "AWS Secrets Manager secret name")
+	err = viper.BindPFlag(core.OptStr_AWS_SecretManager, rootCmd.PersistentFlags().Lookup("aws-secret"))
+	if err != nil {
+		panic(err)
+	}
+
+	rootCmd.MarkFlagsMutuallyExclusive("lower", "upper")
 	rootCmd.MarkFlagsMutuallyExclusive("quiet", "debug")
 	rootCmd.MarkFlagsMutuallyExclusive("quiet", "verbose")
 }

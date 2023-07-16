@@ -21,7 +21,7 @@ func VariablesAsEnvFile(variables map[string]*Variable, quote bool) (string, err
 			envVarValue = escapeDoubleQuotes(envVarValue)
 			envVarValue = fmt.Sprintf("\"%s\"\n", envVarValue)
 		}
-		result += fmt.Sprintf("%s=%s\n", envVarName, envVarValue)
+		result += fmt.Sprintf("%s=%s", envVarName, envVarValue)
 	}
 
 	return result, nil

@@ -40,6 +40,14 @@ func init() {
 		panic(err)
 	}
 
+	// export
+	defaultExport := viper.GetBool(core.OptStr_Export)
+	fetchCmd.PersistentFlags().Bool("export", defaultExport, "Format as sh environment variables to use with 'source'")
+	err = viper.BindPFlag(core.OptStr_Export, fetchCmd.PersistentFlags().Lookup("export"))
+	if err != nil {
+		panic(err)
+	}
+
 	// quote
 	defaultQuote := viper.GetBool(core.OptStr_Quote)
 	fetchCmd.PersistentFlags().Bool("quote", defaultQuote, "Surround each value with doublequotes")
@@ -77,6 +85,11 @@ func init() {
 
 // Top level logic for the fetch CLI subcommand
 func fetch(cmd *cobra.Command, args []string) {
+	// --export implies --quiet
+	if viper.GetBool(core.OptStr_Export) {
+		viper.Set(core.OptStr_Quiet, true)
+	}
+
 	ShowBanner()
 
 	if countRemoteTargets() == 0 {
@@ -84,9 +97,9 @@ func fetch(cmd *cobra.Command, args []string) {
 	}
 
 	variables := make(map[string]*variable.Variable, 0)
-
 	variables = fetchAwsSsmParameters(variables)
 	variables = fetchAwsSmSecrets(variables)
+
 	core.PrintDebug("\n")
 	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(variables)))
 	core.PrintDebug("\n")
@@ -168,11 +181,22 @@ func fetchAwsSmSecrets(variables map[string]*variable.Variable) map[string]*vari
 
 // Convert the list of variables to formatted output.
 func formatVariablesOutput(variables map[string]*variable.Variable) string {
-	// Only does env format for now.
-	useQuotes := viper.GetBool(core.OptStr_Quote)
-	formattedOutput, err := variable.VariablesAsEnvFile(variables, useQuotes)
-	if err != nil {
-		core.PrintFatal("failed to format variables as env file", 1)
+	var formattedOutput string
+	var err error
+
+	asExport := viper.GetBool(core.OptStr_Export)
+
+	if asExport {
+		formattedOutput, err = variable.VariablesAsShellExport(variables)
+		if err != nil {
+			core.PrintFatal("failed to format variables as shell exports", 1)
+		}
+	} else {
+		useQuotes := viper.GetBool(core.OptStr_Quote)
+		formattedOutput, err = variable.VariablesAsEnvFile(variables, useQuotes)
+		if err != nil {
+			core.PrintFatal("failed to format variables as env file", 1)
+		}
 	}
 
 	return formattedOutput

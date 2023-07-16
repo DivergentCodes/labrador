@@ -41,6 +41,7 @@ var (
 	OptStr_NoConflict = "no-conflict"
 	OptStr_OutFile    = "outfile.path"
 	OptStr_FileMode   = "outfile.mode"
+	OptStr_Export     = "export"
 	OptStr_Quote      = "quote"
 
 	OptStr_AWS_Region            = "aws.region"
@@ -52,6 +53,7 @@ func initFetchDefaults() {
 	viper.SetDefault(OptStr_NoConflict, false)
 	viper.SetDefault(OptStr_OutFile, "")
 	viper.SetDefault(OptStr_FileMode, "0600")
+	viper.SetDefault(OptStr_Export, false)
 	viper.SetDefault(OptStr_Quote, false)
 
 	viper.SetDefault(OptStr_AWS_Region, nil)

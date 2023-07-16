@@ -10,16 +10,27 @@ import (
 // Format a set of variables as an env file.
 //
 //	export $(labrador --quiet | xargs)
-func VariablesAsEnvFile(variables map[string]*Variable) (string, error) {
+func VariablesAsEnvFile(variables map[string]*Variable, quote bool) (string, error) {
 
 	result := ""
 
 	for name, item := range variables {
 		envVarName := envNamify(name)
-		result += fmt.Sprintf("%s=%s\n", envVarName, item.Value)
+		envVarValue := item.Value
+		if quote {
+			envVarValue = escapeDoubleQuotes(envVarValue)
+			envVarValue = fmt.Sprintf("\"%s\"\n", envVarValue)
+		}
+		result += fmt.Sprintf("%s=%s\n", envVarName, envVarValue)
 	}
 
 	return result, nil
+}
+
+// Escape double quotes in provided string.
+func escapeDoubleQuotes(value string) string {
+	envVarValue := strings.Replace(value, "\"", "\\\"", -1)
+	return envVarValue
 }
 
 // Transform strings into valid environment variable names.

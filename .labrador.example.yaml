@@ -13,6 +13,9 @@ verbose: true
 # Only show the final result, without the banner or info.
 quiet: false
 
+# Surround values in double quotes and escape existing double quotes.
+quote: false
+
 # Option to write gathered variables/values to a file.
 outfile:
   # File path.

@@ -9,7 +9,6 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 
-	"github.com/divergentcodes/labrador/internal/aws"
 	"github.com/divergentcodes/labrador/internal/core"
 	"github.com/divergentcodes/labrador/internal/variable"
 )
@@ -84,9 +83,9 @@ func fetch(cmd *cobra.Command, args []string) {
 	}
 
 	variables := make(map[string]*variable.Variable, 0)
-
 	variables = fetchAwsSsmParameters(variables)
 	variables = fetchAwsSmSecrets(variables)
+
 	core.PrintDebug("\n")
 	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(variables)))
 	core.PrintDebug("\n")
@@ -106,71 +105,13 @@ func fetch(cmd *cobra.Command, args []string) {
 	}
 }
 
-// Count the number of user-defined resources to pull values from.
-func countRemoteTargets() int {
-	remoteTargetCount := 0
-
-	awsSsmParameters := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	remoteTargetCount += len(awsSsmParameters)
-
-	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
-	remoteTargetCount += len(awsSmSecrets)
-
-	return remoteTargetCount
-}
-
-// Fetch AWS SSM Parameter Store values, convert to variables, add to list, and return the list.
-func fetchAwsSsmParameters(variables map[string]*variable.Variable) map[string]*variable.Variable {
-
-	awsSsmParameters := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
-	if len(awsSsmParameters) != 0 {
-		ssmVariables, err := aws.FetchParameterStore()
-		if err != nil {
-			core.PrintFatal("failed to get SSM parameters", 1)
-		}
-
-		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS SSM Parameter Store", len(ssmVariables)))
-		for name, variable := range ssmVariables {
-			variables[name] = variable
-			core.PrintVerbose(fmt.Sprintf("\n\t%s", variable.Metadata["arn"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", variable.Metadata["type"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", variable.Metadata["version"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tmodified: \t%s", variable.Metadata["last-modified"]))
-		}
-	}
-
-	return variables
-}
-
-// Fetch AWS Secrets Manager values, convert to variables, add to list, and return the list.
-func fetchAwsSmSecrets(variables map[string]*variable.Variable) map[string]*variable.Variable {
-
-	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
-	if len(awsSmSecrets) != 0 {
-		smVariables, err := aws.FetchSecretsManager()
-		if err != nil {
-			core.PrintFatal("failed to get Secrets Manager values", 1)
-		}
-
-		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS Secrets Manager", len(smVariables)))
-		for name, variable := range smVariables {
-			variables[name] = variable
-			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", variable.Metadata["arn"], variable.Key))
-			core.PrintDebug(fmt.Sprintf("\n\t\tsecret-name: \t%s", variable.Metadata["secret-name"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", variable.Metadata["type"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tversion-id: \t%s", variable.Metadata["version-id"]))
-			core.PrintDebug(fmt.Sprintf("\n\t\tcreated: \t%s", variable.Metadata["created-date"]))
-		}
-	}
-
-	return variables
-}
-
 // Convert the list of variables to formatted output.
 func formatVariablesOutput(variables map[string]*variable.Variable) string {
-	// Only does env format for now.
+	var formattedOutput string
+	var err error
+
 	useQuotes := viper.GetBool(core.OptStr_Quote)
-	formattedOutput, err := variable.VariablesAsEnvFile(variables, useQuotes)
+	formattedOutput, err = variable.VariablesAsEnvFile(variables, useQuotes)
 	if err != nil {
 		core.PrintFatal("failed to format variables as env file", 1)
 	}

@@ -10,8 +10,8 @@ import (
 // InitConfigDefaults intializes the default configuration settings for the program.
 func InitConfigDefaults() {
 	initRootDefaults()
+	initValueStoreDefaults()
 	initFetchDefaults()
-
 }
 
 func InitConfigInstance() {
@@ -36,27 +36,32 @@ func initRootDefaults() {
 	viper.SetDefault(OptStr_Verbose, false)
 }
 
+// Value store configuration options.
+var (
+	OptStr_AWS_Region            = "aws.region"
+	OptStr_AWS_SsmParameterStore = "aws.ssm_param"
+	OptStr_AWS_SecretManager     = "aws.sm_secret" //#nosec
+)
+
 // Fetch configuration options
 var (
 	OptStr_NoConflict = "no-conflict"
 	OptStr_OutFile    = "outfile.path"
 	OptStr_FileMode   = "outfile.mode"
 	OptStr_Quote      = "quote"
-
-	OptStr_AWS_Region            = "aws.region"
-	OptStr_AWS_SsmParameterStore = "aws.ssm_param"
-	OptStr_AWS_SecretManager     = "aws.sm_secret" //#nosec
 )
+
+func initValueStoreDefaults() {
+	viper.SetDefault(OptStr_AWS_Region, nil)
+	viper.SetDefault(OptStr_AWS_SsmParameterStore, nil)
+	viper.SetDefault(OptStr_AWS_SecretManager, nil)
+}
 
 func initFetchDefaults() {
 	viper.SetDefault(OptStr_NoConflict, false)
 	viper.SetDefault(OptStr_OutFile, "")
 	viper.SetDefault(OptStr_FileMode, "0600")
 	viper.SetDefault(OptStr_Quote, false)
-
-	viper.SetDefault(OptStr_AWS_Region, nil)
-	viper.SetDefault(OptStr_AWS_SsmParameterStore, nil)
-	viper.SetDefault(OptStr_AWS_SecretManager, nil)
 }
 
 // Configuration file instance setup.

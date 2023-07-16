@@ -40,6 +40,14 @@ func init() {
 		panic(err)
 	}
 
+	// quote
+	defaultQuote := viper.GetBool(core.OptStr_Quote)
+	fetchCmd.PersistentFlags().Bool("quote", defaultQuote, "Surround each value with doublequotes")
+	err = viper.BindPFlag(core.OptStr_Quote, fetchCmd.PersistentFlags().Lookup("quote"))
+	if err != nil {
+		panic(err)
+	}
+
 	// aws-region
 	defaultAwsRegion := ""
 	fetchCmd.PersistentFlags().String("aws-region", defaultAwsRegion, "AWS region")
@@ -161,7 +169,8 @@ func fetchAwsSmSecrets(variables map[string]*variable.Variable) map[string]*vari
 // Convert the list of variables to formatted output.
 func formatVariablesOutput(variables map[string]*variable.Variable) string {
 	// Only does env format for now.
-	formattedOutput, err := variable.VariablesAsEnvFile(variables)
+	useQuotes := viper.GetBool(core.OptStr_Quote)
+	formattedOutput, err := variable.VariablesAsEnvFile(variables, useQuotes)
 	if err != nil {
 		core.PrintFatal("failed to format variables as env file", 1)
 	}

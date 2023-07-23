@@ -24,7 +24,7 @@ func FetchParameterStore() (map[string]*variable.Variable, error) {
 	ssmParameterResources := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	ssmParameterVariables := make(map[string]*variable.Variable, 0)
 
-	core.PrintVerbose("\nFetching SSM Parameter Store values...")
+	core.PrintVerbose("\nFetching AWS SSM Parameter Store values...")
 	for _, resource := range ssmParameterResources {
 		core.PrintDebug(fmt.Sprintf("\n\t%s", resource))
 	}

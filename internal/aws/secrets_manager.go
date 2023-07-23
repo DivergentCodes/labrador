@@ -19,10 +19,10 @@ import (
 func FetchSecretsManager() (map[string]*variable.Variable, error) {
 
 	smClient := initSecretsManagerClient()
-	secretsManagerResources := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
+	secretsManagerResources := viper.GetStringSlice(core.OptStr_AWS_SecretsManager)
 	secretsManagerVariables := make(map[string]*variable.Variable, 0)
 
-	core.PrintVerbose("\nFetching Secrets Manager values...")
+	core.PrintVerbose("\nFetching AWS Secrets Manager values...")
 	for _, resource := range secretsManagerResources {
 		core.PrintDebug(fmt.Sprintf("\n\t%s", resource))
 	}

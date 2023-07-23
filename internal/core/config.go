@@ -41,7 +41,9 @@ func initRootDefaults() {
 var (
 	OptStr_AWS_Region            = "aws.region"
 	OptStr_AWS_SsmParameterStore = "aws.ssm_param"
-	OptStr_AWS_SecretManager     = "aws.sm_secret" //#nosec
+	OptStr_AWS_SecretsManager    = "aws.sm_secret" //#nosec
+
+	OptStr_GCP_SecretManager = "gcp.sm_secret" //#nosec
 )
 
 // Variable key/value transformation configuration options
@@ -61,7 +63,9 @@ var (
 func initValueStoreDefaults() {
 	viper.SetDefault(OptStr_AWS_Region, nil)
 	viper.SetDefault(OptStr_AWS_SsmParameterStore, nil)
-	viper.SetDefault(OptStr_AWS_SecretManager, nil)
+	viper.SetDefault(OptStr_AWS_SecretsManager, nil)
+
+	viper.SetDefault(OptStr_GCP_SecretManager, nil)
 }
 
 func initOutputTransformOptions() {

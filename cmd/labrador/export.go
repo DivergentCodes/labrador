@@ -25,13 +25,7 @@ func export(cmd *cobra.Command, args []string) {
 	// export implies --quiet
 	viper.Set(core.OptStr_Quiet, true)
 
-	if countRemoteTargets() == 0 {
-		core.PrintFatal("no remote values to fetch were specified", 1)
-	}
-
-	variables := make(map[string]*variable.Variable, 0)
-	variables = fetchAwsSsmParameters(variables)
-	variables = fetchAwsSmSecrets(variables)
+	variables := fetchVariables()
 
 	toLower := viper.GetBool(core.OptStr_ToLower)
 	toUpper := viper.GetBool(core.OptStr_ToUpper)

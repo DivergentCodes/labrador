@@ -56,3 +56,19 @@ aws:
   ssm_param:
   - /path/to/single/param
   - /path/to/wildcard/params/*
+
+
+###########################################################
+# GCP options
+###########################################################
+
+gcp:
+
+  # List of GCP Secret Manager secret names to fetch.
+  # Secrets can specify an explicit version, or default to latest.
+  # Format must be one of:
+  #     projects/<project name>/secrets/<secret name>
+  #     projects/<project name>/secrets/<secret name>/versions/<version>
+  sm_secret:
+    - projects/my-first-project/secrets/name-of-secret1
+    - projects/my-other-project/secrets/name-of-secret2/versions/1

@@ -34,6 +34,8 @@ Example use cases:
   - [Fetch All AWS SSM Parameter Store Values at Given Base Path (Wildcard)](#fetch-all-aws-ssm-parameter-store-values-at-given-base-path-wildcard)
   - [Fetch Two Sets of AWS SSM Parameter Store Values](#fetch-two-sets-of-aws-ssm-parameter-store-values)
   - [Fetch an AWS Secrets Manager Value with multiple Key/Value Pairs](#fetch-an-aws-secrets-manager-value-with-multiple-keyvalue-pairs)
+
+  - [Fetch GCP Secret Manager Values With or Without Explicit Versions](#fetch-gcp-secret-manager-values-with-or-without-explicit-versions)
   - [Fetch from Multiple Services At Once](#fetch-from-multiple-services-at-once)
   - [Save Fetched Values to an `.env` File](#save-fetched-values-to-an-env-file)
   - [Set Fetched Values as Environment Variables in the Current Shell](#set-fetched-values-as-environment-variables-in-the-current-shell)
@@ -42,33 +44,62 @@ Example use cases:
 - [Reference](#reference)
   - [Labrador Environment Variables](#labrador-environment-variables)
   - [AWS Environment Variables](#aws-environment-variables)
+  - [GCP Environment Variables](#gcp-environment-variables)
 - [Why Go (Golang)?](#why-go-golang)
 - [Similar Projects](#similar-projects)
 
 ## Quickstart
 
 Before running, set environment variables for accessing the services where the
-values are stored.
-For example, if [authenticating to AWS](#aws-environment-variables) using a
-local profile:
+values are stored. Some quick examples:
 
 ```sh
+# AWS with a local profile.
 export AWS_PROFILE="myprofile"
 export AWS_REGION="us-east-1"
+
+# GCP with a file containing service account key.
+export GOOGLE_APPLICATION_CREDENTIALS="/path/to/service-account-key.json"
 ```
 
-Continuing the example, fetch all key/value pairs from AWS SSM Parameter Store
-at base path `/path/to/params/*`, and saving to the local file `.env`.
+Download and extract the CLI.
 
 ```sh
 curl -sL https://github.com/DivergentCodes/labrador/releases/latest/download/labrador_Linux_x86_64.tar.gz  | tar -zx
+```
 
-./labrador fetch --aws-param "/path/to/params/*" --outfile ".env"
+Fetch key/value pairs from AWS SSM Parameter Store, AWS Secret Manager,
+and GCP Secret Manager, then save all of them in an `.env` file.
+
+```sh
+./labrador fetch \
+  --aws-param "/path/to/test/params/*" \
+  --aws-secret "my/test/aws-secret1" \
+  --gcp-secret "projects/my-test-project/secrets/gcp-secret1" \
+  --outfile ".env"
 ```
 
 You can also copy the `.labrador.example.yaml` example configuration file
-over to `.labrador.yaml`, customize it, and run `labrador fetch` without
-any other arguments needed.
+over to `.labrador.yaml`, customize it, and run `labrador fetch` or
+`labrador export` without any arguments needed.
+
+```yaml
+aws:
+  ssm_param:
+  - /path/to/test/params/*
+  sm_secret:
+  - my/test/aws-secret1
+gcp:
+  sm_secret:
+  - projects/my-test-project/secrets/gcp-secret1
+```
+
+Example of exporting into the current shell with the above configuation.
+
+```sh
+source <(./labrador export)
+```
+
 
 ## Features
 
@@ -91,8 +122,9 @@ any other arguments needed.
 
 ### Supported Value Stores
 
-- **AWS SSM Parameter Store**: this action can pull individual parameters, or recursively pull a wildcard path with all child variables, as individual environment variables.
-- **AWS Secrets Manager**: this action can pull all key/value pairs in a single secret are loaded as individual environment variables.
+- **AWS SSM Parameter Store**: pull individual parameters, or recursively pull a wildcard path with all child variables, as individual environment variables.
+- **AWS Secrets Manager**: pull all key/value pairs in a single secret are loaded as individual environment variables.
+- **GCP Secret Manager**: pull each secret as a key/value pair, with or without explicit versions, and load as individual environment variables.
 
 ### CI/CD pipeline Packages
 
@@ -149,7 +181,7 @@ specific instance.
 labrador fetch --aws-param "/global/shared/params/*" --aws-param "/instance/params/*"
 ```
 
-### Fetch an AWS Secrets Manager Value with multiple Key/Value Pairs
+### Fetch an AWS Secrets Manager Value With multiple Key/Value Pairs
 
 A single secret in AWS Secrets Manager can store multiple key/value pairs.
 Labrador will pull the secret, extract each key/value, and return them as
@@ -159,13 +191,25 @@ individual variables.
 labrador fetch --aws-secret "path/to/secret"
 ```
 
+### Fetch GCP Secret Manager Values With or Without Explicit Versions
+
+Labrador will default to a GCP secret's `versions/latest` version if
+one isn't explicitly specified. Each secret can hold a single key/value
+pair.
+
+```sh
+labrador fetch \
+  --gcp-secret "projects/myproject/secrets/foo" \
+  --gcp-secret "projects/myproject/secrets/bar/versions/1"
+```
+
 ### Fetch from Multiple Services At Once
 
 If your configuration is spread across multiple services (e.g. undergoing
 a migration), you can fetch values from all of them at the same time.
 
 ```sh
-labrador fetch --aws-param "/path/to/params/*" --aws-secret "path/to/secret"
+labrador fetch --aws-param "/path/to/params/*" --gcp-secret "projects/myproject/secrets/mysecret"
 ```
 
 ### Save Fetched Values to an `.env` File
@@ -288,6 +332,15 @@ session with AWS, like Github Actions' `aws-actions/configure-aws-credentials`.
 - `AWS_PROFILE`
 - `AWS_SECRET_ACCESS_KEY` and `AWS_ACCESS_KEY_ID`
 - `AWS_ROLE_ARN` and `AWS_WEB_IDENTITY_TOKEN_FILE` and `AWS_ROLE_SESSION_NAME`.
+
+### GCP Environment Variables
+
+For Labrador to access secrets stored in GCP, configure the
+[Application Default
+Credentials (ADC)](https://cloud.google.com/docs/authentication/provide-credentials-adc). If the credentials file is not stored in the default
+location, an environment variable can point to the file.
+
+- `GOOGLE_APPLICATION_CREDENTIALS`
 
 
 ## Why Go (Golang)?

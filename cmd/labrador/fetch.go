@@ -57,13 +57,17 @@ func init() {
 func fetch(cmd *cobra.Command, args []string) {
 	ShowBanner()
 
-	if countRemoteTargets() == 0 {
-		core.PrintFatal("no remote values to fetch were specified", 1)
-	}
+	/*
+		if countRemoteTargets() == 0 {
+			core.PrintFatal("no remote values to fetch were specified", 1)
+		}
 
-	variables := make(map[string]*variable.Variable, 0)
-	variables = fetchAwsSsmParameters(variables)
-	variables = fetchAwsSmSecrets(variables)
+		variables := make(map[string]*variable.Variable, 0)
+		variables = fetchAwsSsmParameters(variables)
+		variables = fetchAwsSmSecrets(variables)
+	*/
+
+	variables := fetchVariables()
 
 	core.PrintDebug("\n")
 	core.PrintNormal(fmt.Sprintf("\nFetched %d values\n", len(variables)))

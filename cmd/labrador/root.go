@@ -47,6 +47,7 @@ import (
 
 	"github.com/divergentcodes/labrador/internal/aws"
 	"github.com/divergentcodes/labrador/internal/core"
+	"github.com/divergentcodes/labrador/internal/gcp"
 	"github.com/divergentcodes/labrador/internal/variable"
 )
 
@@ -152,9 +153,17 @@ func initRootFlags() {
 	}
 
 	// aws-secret
-	defaultAwsSmSecrets := viper.GetViper().GetStringSlice(core.OptStr_AWS_SecretManager)
+	defaultAwsSmSecrets := viper.GetViper().GetStringSlice(core.OptStr_AWS_SecretsManager)
 	rootCmd.PersistentFlags().StringSlice("aws-secret", defaultAwsSmSecrets, "AWS Secrets Manager secret name")
-	err = viper.BindPFlag(core.OptStr_AWS_SecretManager, rootCmd.PersistentFlags().Lookup("aws-secret"))
+	err = viper.BindPFlag(core.OptStr_AWS_SecretsManager, rootCmd.PersistentFlags().Lookup("aws-secret"))
+	if err != nil {
+		panic(err)
+	}
+
+	// gcp-secret
+	defaultGcpSecret := viper.GetViper().GetStringSlice(core.OptStr_GCP_SecretManager)
+	rootCmd.PersistentFlags().StringSlice("gcp-secret", defaultGcpSecret, "GCP Secret Manager secret name")
+	err = viper.BindPFlag(core.OptStr_GCP_SecretManager, rootCmd.PersistentFlags().Lookup("gcp-secret"))
 	if err != nil {
 		panic(err)
 	}
@@ -187,6 +196,22 @@ func bannerText() string {
 	return fmt.Sprintf("Labrador %s created by %s <%s>\n", core.Version, core.AuthorName, core.AuthorEmail)
 }
 
+// Wrapper to bundle fetching from each service.
+func fetchVariables() map[string]*variable.Variable {
+	if countRemoteTargets() == 0 {
+		core.PrintFatal("no remote values to fetch were specified", 1)
+	}
+
+	variables := make(map[string]*variable.Variable, 0)
+
+	variables = fetchAwsSsmParameters(variables)
+	variables = fetchAwsSmSecrets(variables)
+
+	variables = fetchGcpSmSecrets(variables)
+
+	return variables
+}
+
 // Count the number of user-defined resources to pull values from.
 func countRemoteTargets() int {
 	remoteTargetCount := 0
@@ -194,7 +219,7 @@ func countRemoteTargets() int {
 	awsSsmParameters := viper.GetStringSlice(core.OptStr_AWS_SsmParameterStore)
 	remoteTargetCount += len(awsSsmParameters)
 
-	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
+	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretsManager)
 	remoteTargetCount += len(awsSmSecrets)
 
 	return remoteTargetCount
@@ -207,13 +232,14 @@ func fetchAwsSsmParameters(variables map[string]*variable.Variable) map[string]*
 	if len(awsSsmParameters) != 0 {
 		ssmVariables, err := aws.FetchParameterStore()
 		if err != nil {
-			core.PrintFatal("failed to get SSM parameters", 1)
+			core.PrintFatal("failed to get AWS SSM parameters", 1)
 		}
 
 		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS SSM Parameter Store", len(ssmVariables)))
 		for name, variable := range ssmVariables {
 			variables[name] = variable
-			core.PrintVerbose(fmt.Sprintf("\n\t%s", variable.Metadata["arn"]))
+			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", variable.Metadata["arn"], variable.Key))
+			core.PrintDebug(fmt.Sprintf("\n\t\tarn: \t\t%s", variable.Metadata["arn"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", variable.Metadata["type"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", variable.Metadata["version"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\tmodified: \t%s", variable.Metadata["last-modified"]))
@@ -226,21 +252,52 @@ func fetchAwsSsmParameters(variables map[string]*variable.Variable) map[string]*
 // Fetch AWS Secrets Manager values, convert to variables, add to list, and return the list.
 func fetchAwsSmSecrets(variables map[string]*variable.Variable) map[string]*variable.Variable {
 
-	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretManager)
+	awsSmSecrets := viper.GetStringSlice(core.OptStr_AWS_SecretsManager)
 	if len(awsSmSecrets) != 0 {
 		smVariables, err := aws.FetchSecretsManager()
 		if err != nil {
-			core.PrintFatal("failed to get Secrets Manager values", 1)
+			core.PrintFatal("failed to get AWS Secrets Manager values", 1)
 		}
 
 		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from AWS Secrets Manager", len(smVariables)))
 		for name, variable := range smVariables {
 			variables[name] = variable
 			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", variable.Metadata["arn"], variable.Key))
+			core.PrintDebug(fmt.Sprintf("\n\t\tarn: \t\t%s", variable.Metadata["arn"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\tsecret-name: \t%s", variable.Metadata["secret-name"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\ttype: \t\t%s", variable.Metadata["type"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\tversion-id: \t%s", variable.Metadata["version-id"]))
 			core.PrintDebug(fmt.Sprintf("\n\t\tcreated: \t%s", variable.Metadata["created-date"]))
+		}
+	}
+
+	return variables
+}
+
+// Fetch GCP Secret Manager values, convert to variables, add to list, and return the list.
+func fetchGcpSmSecrets(variables map[string]*variable.Variable) map[string]*variable.Variable {
+
+	gcpSmSecrets := viper.GetStringSlice(core.OptStr_GCP_SecretManager)
+	if len(gcpSmSecrets) != 0 {
+		smVariables, err := gcp.FetchSecretManager()
+		if err != nil {
+			core.PrintFatal("failed to get GCP Secret Manager values", 1)
+		}
+
+		core.PrintVerbose(fmt.Sprintf("\nFetched %d values from GCP Secret Manager", len(smVariables)))
+		for name, variable := range smVariables {
+			variables[name] = variable
+			core.PrintVerbose(fmt.Sprintf("\n\t%s (%s)", variable.Metadata["secret-name"], variable.Key))
+			core.PrintDebug(fmt.Sprintf("\n\t\tsecret-name: \t%s", variable.Metadata["secret-name"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tcreate-time: \t%s", variable.Metadata["create-time"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\texpire-time: \t%s", variable.Metadata["expire-time"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tversion: \t%s", variable.Metadata["version"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tproject: \t%s", variable.Metadata["project"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tetag: \t\t%s", variable.Metadata["etag"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\trotation: \t%s", variable.Metadata["rotation"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\ttopics: \t%s", variable.Metadata["topics"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tannotations: \t%s", variable.Metadata["annotations"]))
+			core.PrintDebug(fmt.Sprintf("\n\t\tlabels: \t%s", variable.Metadata["labels"]))
 		}
 	}
 
